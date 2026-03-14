@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五一越南美食之旅 · 手机版</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1a1a1a;background:#fff;line-height:1.5}
+
+/* 每页 = 一个横屏截图 (16:9) */
+.section{width:100vw;height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:center;padding:clamp(16px,3vh,32px) clamp(20px,4vw,48px);overflow-y:auto;overscroll-behavior:contain}
+
+/* TYPOGRAPHY — 手机横屏要大 */
+h1{font-size:clamp(28px,4.5vh,48px);font-weight:700;line-height:1.2;margin-bottom:6px}
+h2{font-size:clamp(22px,3.5vh,38px);font-weight:700;margin-bottom:8px;color:#1a1a1a}
+h3{font-size:clamp(16px,2.5vh,28px);font-weight:600;color:#b8960c;margin:8px 0 4px}
+p{font-size:clamp(14px,2.2vh,24px);color:#555;margin-bottom:6px}
+.label{font-size:clamp(12px,1.8vh,20px);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+
+/* HERO */
+.hero{text-align:center;justify-content:center;align-items:center}
+.hero .emoji{font-size:clamp(48px,8vh,80px)}
+.hero h1{font-size:clamp(32px,5.5vh,56px);margin:8px 0}
+.hero .tags{margin-top:8px}
+.tag{display:inline-block;padding:4px 12px;border-radius:99px;font-size:clamp(13px,2vh,22px);font-weight:500;border:1px solid #ddd;margin:2px}
+.tag.gold{border-color:#b8960c;color:#b8960c}
+.tag.pink{border-color:#c4547a;color:#c4547a}
+
+/* IMAGES */
+.img-row{display:flex;gap:4px;margin:6px 0;border-radius:8px;overflow:hidden}
+.img-row img{flex:1;min-width:0;height:clamp(80px,18vh,180px);object-fit:cover}
+
+/* ROUTE CARD — 横排三个 */
+.routes{display:flex;gap:8px;margin:8px 0;flex:1}
+.route{background:#f8f8f6;border-radius:10px;padding:10px;flex:1;display:flex;flex-direction:column}
+.route img{width:100%;flex:1;min-height:0;object-fit:cover;border-radius:8px;margin-bottom:6px}
+.route .name{font-size:clamp(15px,2.4vh,26px);font-weight:700}
+.route .meta{font-size:clamp(13px,2vh,22px);color:#b87333;font-weight:600}
+.route .desc{font-size:clamp(12px,1.8vh,20px);color:#777}
+
+/* RECO BOX */
+.reco{border:2px solid #c45040;border-radius:10px;padding:clamp(10px,1.5vh,20px);margin:6px 0;background:linear-gradient(135deg,#fff5f3,#fef0ee)}
+.reco .big{font-size:clamp(18px,3vh,32px);font-weight:700;color:#c45040}
+.reco.alt{border-color:#2a8a7a;background:linear-gradient(135deg,#f0faf7,#e8f5f0)}
+.reco.alt .big{color:#2a8a7a}
+.reco.dim{border-color:#ddd;background:#f8f8f6}
+.reco.dim .big{color:#999}
+.recos{display:flex;gap:8px;margin:6px 0}
+.recos>.reco{flex:1}
+
+/* FOOD CARD — 横屏4列 */
+.food-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0;flex:1}
+.food-card{background:#f8f8f6;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.food-card img{width:100%;flex:1;min-height:0;object-fit:cover}
+.food-card .info{padding:4px 8px;flex-shrink:0}
+.food-card .fname{font-size:clamp(13px,2vh,22px);font-weight:700;line-height:1.25}
+.food-card .fprice{font-size:clamp(12px,1.8vh,20px);color:#b87333;font-weight:700}
+.food-card .fquote{font-size:clamp(11px,1.5vh,17px);color:#777;font-style:italic;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* QUOTE */
+.quote{background:#f8f8f6;border-left:3px solid #b8960c;border-radius:0 8px 8px 0;padding:clamp(8px,1.2vh,16px) clamp(10px,1.5vw,18px);margin:4px 0;flex:1}
+.quote p{font-size:clamp(13px,2vh,22px);color:#1a1a1a;font-style:italic}
+.quote .attr{font-size:clamp(11px,1.6vh,18px);color:#b8960c;margin-top:3px;font-style:normal}
+.quotes{display:flex;gap:8px;margin:6px 0}
+
+/* HOTEL CARD */
+.hotel-card{background:#f8f8f6;border-radius:8px;padding:clamp(8px,1.2vh,16px);margin:4px 0}
+.hotel-card .hname{font-size:clamp(15px,2.2vh,24px);font-weight:700}
+.hotel-card .hprice{font-size:clamp(14px,2vh,22px);color:#b87333;font-weight:600}
+.hotel-card .hreason{font-size:clamp(13px,1.8vh,20px);color:#555;font-style:italic;margin-top:3px}
+.hotels-row{display:flex;gap:8px;margin:4px 0}
+.hotels-row .hotel-card{flex:1}
+
+/* DAY CARD */
+.day{background:#f8f8f6;border-radius:8px;padding:clamp(8px,1.2vh,14px);margin:4px 0;border-left:4px solid #c45040;flex:1}
+.day.teal{border-left-color:#2a8a7a}
+.day.pink{border-left-color:#c4547a}
+.day .dname{font-size:clamp(14px,2vh,22px);font-weight:700;margin-bottom:2px}
+.day .dname a{font-size:clamp(12px,1.6vh,18px);color:#b8960c;text-decoration:none;margin-left:4px}
+.day .ddesc{font-size:clamp(13px,1.8vh,20px);color:#555;line-height:1.4}
+.days-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0;flex:1}
+
+/* BUDGET TABLE */
+.budget{width:100%;border-collapse:collapse;margin:8px 0;font-size:clamp(14px,2vh,22px)}
+.budget th{text-align:left;color:#b8960c;font-weight:600;padding:clamp(6px,1vh,12px) 8px;border-bottom:2px solid #eee}
+.budget td{padding:clamp(6px,1vh,12px) 8px;color:#555;border-bottom:1px solid #f0f0f0}
+.budget .amt{text-align:right;font-weight:600;color:#b87333}
+.budget tr:last-child td{border-bottom:2px solid #eee;font-weight:700;color:#1a1a1a}
+
+/* TODO — 时间线卡片 */
+.todo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;flex:1}
+.todo{border-radius:12px;padding:clamp(10px,1.5vh,16px);position:relative;overflow:hidden}
+.todo.urgent{background:linear-gradient(135deg,#fff0f0,#ffe8e8);border:2px solid #e07060}
+.todo.soon{background:linear-gradient(135deg,#fff8ee,#fff3e0);border:2px solid #b87333}
+.todo.normal{background:linear-gradient(135deg,#f0f8ff,#e8f4f8);border:2px solid #2a8a7a}
+.todo .tname{font-size:clamp(15px,2.2vh,24px);font-weight:700;margin-bottom:6px}
+.todo .tdesc{font-size:clamp(14px,2vh,22px);color:#444;line-height:2.0}
+.todo .tbadge{position:absolute;top:8px;right:8px;font-size:clamp(10px,1.3vh,14px);font-weight:700;padding:2px 8px;border-radius:99px;color:#fff}
+.todo.urgent .tbadge{background:#e07060}
+.todo.soon .tbadge{background:#b87333}
+.todo.normal .tbadge{background:#2a8a7a}
+
+/* TIPS — 横排 */
+.tips-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;flex:1}
+.tip-block{background:#f8f8f6;border-radius:8px;padding:clamp(8px,1.2vh,14px)}
+.tip-block h3{margin-bottom:4px;font-size:clamp(14px,2vh,22px)}
+.tip-block p{font-size:clamp(12px,1.6vh,18px)}
+
+/* FOOTER */
+.footer{text-align:center;padding:16px 0;color:#999;font-size:clamp(11px,1.4vh,16px)}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero section">
+  <div class="emoji">🍜🇻🇳</div>
+  <div class="label" style="color:#b8960c">深圳出发 · 2026 五一假期</div>
+  <h1>越南美食之旅</h1>
+  <p style="font-size:17px">3 条路线 · 以吃为主 · 精确预算<br>小红书博主实测推荐 · 携程实价</p>
+  <div class="tags">
+    <span class="tag gold">4月30日下班出发</span>
+    <span class="tag pink">情侣美食游</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="section">
+  <h2>三条路线 · 预算对比</h2>
+  <div class="routes">
+    <div class="route">
+      <img src="images/food_hochiminh_1_2.webp">
+      <div class="name" style="color:#c45040">A · 胡志明 ⭐</div>
+      <div class="meta">4天3晚 · 两人¥13,300</div>
+      <div class="desc">美食之都 · 4/30下班直飞</div>
+    </div>
+    <div class="route">
+      <img src="images/scenery_hoian_2_1.webp">
+      <div class="name" style="color:#2a8a7a">B · 岘港+会安</div>
+      <div class="meta">5天4晚 · 两人¥10,900</div>
+      <div class="desc">高楼面/白玫瑰 · 最文艺</div>
+    </div>
+    <div class="route">
+      <img src="images/scenery_phuquoc_kiss_2_2.webp">
+      <div class="name" style="color:#c4547a">C · 富国岛</div>
+      <div class="meta">5天4晚 · 两人¥16,000</div>
+      <div class="desc">夜市/鱼火锅 · 免签</div>
+    </div>
+  </div>
+</div>
+
+<!-- RECOMMENDATION -->
+<div class="section">
+  <h2>⭐ 我的推荐</h2>
+  <div class="reco">
+    <div class="big">首选：A 胡志明市 · 4/30下班直飞</div>
+    <p style="margin-top:4px;color:#1a1a1a">美食种类最全 · 河粉/法棍/螃蟹/咖啡/米其林全覆盖 · 两人¥13,300</p>
+  </div>
+  <div class="recos">
+    <div class="reco alt">
+      <div class="big">备选：B 岘港+会安</div>
+      <p>只多¥1,200 · 神级河粉+放水灯</p>
+    </div>
+    <div class="reco dim">
+      <div class="big">C 富国岛 · 看预算</div>
+      <p>¥16,000偏贵 · 省钱版¥10,600</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== A: 胡志明 ===== -->
+<div class="section">
+  <div class="img-row">
+    <img src="images/food_hochiminh_1_2.webp">
+    <img src="images/food_hochiminh_2_1.webp">
+    <img src="images/food_hochiminh_1_3.webp">
+  </div>
+  <div class="label" style="color:#c45040">方案 A</div>
+  <h1 style="color:#c45040">胡志明市</h1>
+  <p style="font-size:18px">越南美食之都 · 4天3晚 · 两人约¥13,300</p>
+</div>
+
+<!-- A: FOOD 1-4 -->
+<div class="section">
+  <div class="label" style="color:#c45040">方案 A · 胡志明</div>
+  <h2>🍜 必吃 TOP 1-4</h2>
+  <div class="food-grid">
+    <div class="food-card"><img src="images/food_hcm_03_banhmi_chao.webp"><div class="info"><div class="fname">1. Pizza 4P's 🏆</div><div class="fprice">¥120/人</div><div class="fquote">"四种烤奶酪香而不腻。排！你就吃吧！" @毛儿妈i辣椒 1,435赞</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_07_banhcanhcua87.webp"><div class="info"><div class="fname">2. Pho Viet Nam</div><div class="fprice">¥30 · 米其林</div><div class="fquote">"汤底怎么这么鲜甜！买单才80块你敢信" @Scarlett</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_06_pho_vietnam.webp"><div class="info"><div class="fname">3. Nha Tu 米其林</div><div class="fprice">¥150/人</div><div class="fquote">"三刷的店，越南坠好吃的一顿" @八个瑞士卷 1,407赞</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_01_pizza4ps.webp"><div class="info"><div class="fname">4. Banh Canh Cua</div><div class="fprice">¥20/人</div><div class="fquote">"虾蟹粉超高性价比，本地苍蝇馆" @博主实测</div></div></div>
+  </div>
+</div>
+
+<!-- A: FOOD 5-8 -->
+<div class="section">
+  <div class="label" style="color:#c45040">方案 A · 胡志明</div>
+  <h2>🍜 必吃 TOP 5-8 + 咖啡</h2>
+  <div class="food-grid">
+    <div class="food-card"><img src="images/food_hcm_11_niku_fella.webp"><div class="info"><div class="fname">5. Hoa Tuc 米其林</div><div class="fprice">¥120/人</div><div class="fquote">"每个菜出品都不错，可以去尝尝" @博主实测</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_05_nha_tu.webp"><div class="info"><div class="fname">6. Man Moi 创意菜</div><div class="fprice">¥100/人</div><div class="fquote">"安吉丽娜朱莉喜欢的餐厅，装修好看" @博主实测</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_10_cafe_linh.webp"><div class="info"><div class="fname">7. Ca Phe Linh</div><div class="fprice">¥15 · 复古咖啡</div><div class="fquote">"坐街边喝冰滴，仿佛时间倒退" @肯尼.伍 346赞</div></div></div>
+    <div class="food-card"><img src="images/food_hcm_15_banhmi_hoama.webp"><div class="info"><div class="fname">8. Bep Ong Cau</div><div class="fprice">¥25/人</div><div class="fquote">"排骨牛肉粉，好吃到给了小费" @八个瑞士卷</div></div></div>
+  </div>
+</div>
+
+<!-- A: MORE QUOTES -->
+<div class="section">
+  <h2>☕ 更多推荐</h2>
+  <div class="quotes">
+    <div class="quote"><p>"The Workshop 真的很好喝！朋友喝了7杯咖啡因过量了"</p><div class="attr">@小努今天吃可颂 · 亚洲第3 · ¥30</div></div>
+    <div class="quote"><p>"Banh Mi Hoa Ma 铁板煎蛋滋滋冒油，加冰咖啡注入灵魂！"</p><div class="attr">@雷玛丽speaking · 1,185赞 · ¥30</div></div>
+    <div class="quote"><p>"Cuc Gach Quan 越南菜天花板！绿植包围，约会拍照"</p><div class="attr">@八个瑞士卷 · 米其林 · ¥150</div></div>
+  </div>
+</div>
+
+<!-- A: FLIGHTS -->
+<div class="section">
+  <div class="label" style="color:#c45040">方案 A · 胡志明</div>
+  <h2>✈️ 航班选择</h2>
+  <h3>去程 · 4月30日</h3>
+  <div class="hotel-card" style="border-left:4px solid #2a8a7a">
+    <div class="hname">CZ8473 ⭐ 南航 · 22:55→01:25+1 · ¥3,088/人</div>
+    <div class="hreason" style="color:#2a8a7a">✅ 4/30下班后唯一可选 · 直奔机场即可</div>
+  </div>
+  <div class="hotel-card">
+    <div class="hname">ZH117 深航 · 00:15→01:50 · ¥1,298/人</div>
+    <div class="hreason" style="color:#999">⚠️ 凌晨航班 · 需4/29晚到机场 · 省¥1,790但需请半天假</div>
+  </div>
+  <div class="hotel-card">
+    <div class="hname">CZ8465 南航 · 11:30→13:30 · ¥1,498/人</div>
+    <div class="hreason" style="color:#999">❌ 上午航班 · 需4/30请一天假</div>
+  </div>
+  <h3>回程 · 5月3日</h3>
+  <div class="hotel-card" style="border-left:4px solid #2a8a7a">
+    <div class="hname">ZH118 ⭐ 深航 · 02:50→06:30 · ¥1,083/人</div>
+    <div class="hreason" style="color:#2a8a7a">✅ 红眼回深圳 · 白天不浪费 · 早上06:30到家</div>
+  </div>
+  <div class="hotel-card">
+    <div class="hname">CZ8466 南航 · 14:30→18:20 · ¥1,417/人</div>
+    <div class="hreason" style="color:#999">下午航班 · 5/3上午还能逛半天 · 傍晚到家</div>
+  </div>
+  <div class="hotel-card">
+    <div class="hname">CZ8474 南航 · 02:25→06:10 · ¥1,298/人</div>
+    <div class="hreason" style="color:#999">红眼回 · 比ZH118早25分钟 · 价格稍贵</div>
+  </div>
+  <p style="text-align:center;margin-top:4px;font-size:clamp(12px,1.6vh,18px);color:#b87333;font-weight:600">💡 推荐 CZ8473+ZH118 = ¥4,171/人 · 下班飞→红眼回</p>
+</div>
+
+<!-- A: HOTEL -->
+<div class="section">
+  <div class="label" style="color:#c45040">方案 A · 胡志明</div>
+  <h2>🏨 推荐酒店</h2>
+  <div class="img-row">
+    <img src="images/hotel_lavela.jpg">
+    <img src="images/hotel_cityoasis.jpg">
+    <img src="images/hotel_president.jpg">
+  </div>
+  <div class="hotels-row">
+    <div class="hotel-card" style="border-left:4px solid #2a8a7a">
+      <div class="hname">La Vela Saigon ⭐</div>
+      <div class="hprice">¥921/晚 · 3晚¥2,984</div>
+      <div class="hreason">"至今见过最大的泳池" @爱玩爱美爱生活</div>
+    </div>
+    <div class="hotel-card">
+      <div class="hname">City Oasis · 省钱版</div>
+      <div class="hprice">¥731/晚 · 3晚¥2,194 · ⚠️剩1间</div>
+      <div class="hreason">"独栋泳池+免费果汁" @为嘛不高兴 737赞</div>
+    </div>
+  </div>
+  <div class="hotels-row">
+    <div class="hotel-card">
+      <div class="hname">President Maison · 五星</div>
+      <div class="hprice" style="color:#c45040">❌ 已订满</div>
+      <div class="hreason">"像有钱人的私人宅邸" @没事就去攀岩吧</div>
+    </div>
+    <div class="hotel-card">
+      <div class="hname">KiN Hotel · Booking备选</div>
+      <div class="hprice">3晚¥3,155 · 评分9.5</div>
+      <div class="hreason">Booking.com 有房 · 高评分精品酒店</div>
+    </div>
+  </div>
+</div>
+
+<!-- A: BUDGET -->
+<div class="section">
+  <h2>💰 预算清单</h2>
+  <table class="budget">
+    <tr><th>项目</th><th>明细</th><th class="amt">金额</th></tr>
+    <tr><td>✈️ 机票</td><td>CZ8473+ZH118 ×2</td><td class="amt">¥8,342</td></tr>
+    <tr><td>🏨 酒店</td><td>La Vela 3晚</td><td class="amt">¥2,984</td></tr>
+    <tr><td>📋 签证</td><td>电子签 ×2</td><td class="amt">¥440</td></tr>
+    <tr><td>🍜 餐饮</td><td>4天 人均¥100/天</td><td class="amt">¥800</td></tr>
+    <tr><td>🚕 交通</td><td>Grab 4天</td><td class="amt">¥200</td></tr>
+    <tr><td>🎫 活动</td><td>A O Show等</td><td class="amt">¥500</td></tr>
+    <tr><td><strong>合计</strong></td><td></td><td class="amt" style="color:#c45040;font-size:20px">¥13,266</td></tr>
+  </table>
+  <div class="reco dim" style="margin-top:8px">
+    <p style="font-size:clamp(13px,1.8vh,20px)"><strong>💡 省钱方案：</strong><br>
+    ① 换 City Oasis 酒店 → 省 ¥790 → <strong>¥12,476</strong><br>
+    ② 若能 4/29 晚出发选 ZH117 → 再省 ¥3,580 → <strong>¥8,896</strong><br>
+    ③ 两个都选 → 最低 <strong style="color:#2a8a7a">¥8,106</strong></p>
+  </div>
+</div>
+
+<!-- A: ITINERARY -->
+<div class="section">
+  <h2>📅 4天3晚行程</h2>
+  <div class="days-grid">
+    <div class="day"><div class="dname">Day 1 · 4/30 <a href="https://www.google.com/maps/dir/Banh%20Mi%20Huynh%20Hoa%20Ho%20Chi%20Minh/Bui%20Vien%20Walking%20Street" target="_blank">📍</a></div><div class="ddesc">CZ8473 22:55到达 · 范五老街逛吃 · 咖啡公寓 · 法棍</div></div>
+    <div class="day"><div class="dname">Day 2 · 5/1 <a href="https://www.google.com/maps/dir/Pho%20Viet%20Nam%2014%20Pham%20Hong%20Thai/Notre%20Dame%20Cathedral%20Saigon/The%20Workshop%20Coffee%2027%20Ngo%20Duc%20Ke/Tan%20Dinh%20Church%20Ho%20Chi%20Minh/Saigon%20Opera%20House" target="_blank">📍</a></div><div class="ddesc">河粉·大教堂·邮局·Workshop Coffee·粉红教堂·A O Show</div></div>
+    <div class="day"><div class="dname">Day 3 · 5/2 <a href="https://www.google.com/maps/dir/Cu%20Chi%20Tunnels/Ben%20Thanh%20Market%20Ho%20Chi%20Minh/Reunification%20Palace%20Saigon" target="_blank">📍</a></div><div class="ddesc">古芝地道·统一宫·双层巴士·范五老街·春卷+甘蔗汁</div></div>
+    <div class="day"><div class="dname">Day 4 · 5/3</div><div class="ddesc">酒店泳池 · ZH118 02:50→06:30 回深圳</div></div>
+  </div>
+</div>
+
+<!-- A: MAP -->
+<div class="section">
+  <div class="label" style="color:#c45040">方案 A · 胡志明</div>
+  <h2>📍 行程地图</h2>
+  <p style="font-size:clamp(11px,1.5vh,16px);color:#777;margin-bottom:4px">❶法棍 ❷范五老街 ❸河粉 ❹大教堂 ❺Workshop Coffee ❻粉红教堂 ❼A O Show ❽Ben Thanh ❾统一宫 · 🏨La Vela · ✈️SGN机场</p>
+  <div id="map-hcm-m" style="width:100%;height:clamp(200px,50vh,400px);border-radius:10px"></div>
+</div>
+
+<!-- A: TODO -->
+<div class="section">
+  <h2>✅ 出发前 TODO</h2>
+  <div class="todo-grid">
+    <div class="todo urgent">
+      <div class="tbadge">立刻</div>
+      <div class="tname">✈️ 机票</div>
+      <div class="tdesc">☐ 去 CZ8473 4/30 22:55 · ¥3,088/人<br>☐ 回 ZH118 5/3 02:50 · ¥1,083/人<br>☐ 截图返程票备查</div>
+    </div>
+    <div class="todo urgent">
+      <div class="tbadge">立刻</div>
+      <div class="tname">🏨 酒店</div>
+      <div class="tdesc">☐ La Vela Saigon 3晚 ¥2,984<br>☐ Trip.com / Booking 下单<br>☐ 保存确认邮件截图</div>
+    </div>
+    <div class="todo soon">
+      <div class="tbadge">30天前</div>
+      <div class="tname">📋 签证</div>
+      <div class="tdesc">☐ 淘宝代办电子签 ¥220<br>☐ 护照有效期 ≥ 6个月<br>☐ 2寸白底证件照<br>☐ 打印签证批文</div>
+    </div>
+    <div class="todo soon">
+      <div class="tbadge">7天前</div>
+      <div class="tname">🎫 门票预约</div>
+      <div class="tdesc">☐ A O Show 演出（5/1晚）<br>☐ Pizza 4P's Google预约<br>☐ 古芝地道 Klook 购票</div>
+    </div>
+    <div class="todo normal">
+      <div class="tbadge">3天前</div>
+      <div class="tname">💰 钱</div>
+      <div class="tdesc">☐ Visa卡开通境外支付<br>☐ 换300万越南盾(¥860)<br>☐ 记住 1元≈3500盾</div>
+    </div>
+    <div class="todo normal">
+      <div class="tbadge">出发前</div>
+      <div class="tname">🎒 行李清单</div>
+      <div class="tdesc">☐ 防晒霜 + 帽子 + 墨镜<br>☐ 折叠伞（5月雨季）<br>☐ 泳衣 · 拖鞋<br>☐ 电话卡 Vinaphone ¥30<br>☐ 充电宝 + 转换插头<br>☐ 下载 Grab + Google Maps</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div class="section">
+  <h2>📋 实用贴士</h2>
+  <div class="tips-grid">
+    <div class="tip-block"><h3>🍜 吃喝</h3><p>路边摊¥10-20 · 餐厅¥50-80<br>河粉·法棍·滴漏咖啡必尝<br>椰子¥3 · 甘蔗汁¥2</p></div>
+    <div class="tip-block"><h3>📱 工具</h3><p>Grab打车省一半<br>只喝瓶装水<br>时差慢1小时<br>Google Maps导航</p></div>
+    <div class="tip-block"><h3>⚠️ 安全</h3><p>过马路匀速走<br>飞车党·斜挎包<br>查返程票截图</p></div>
+    <div class="tip-block"><h3>💕 情侣</h3><p>奥黛拍照¥50-80<br>SPA双人¥150-300<br>日落5:30-6:30</p></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>数据来源</strong><br>
+  小红书50+篇高赞笔记 · 携程/Trip.com实时查询<br>
+  酒店：Trip.com/Booking.com精确查询<br>
+  预算为两人合计 · 2026-03-14 查询</p>
+</div>
+
+<script>
+function numIcon(n,color){
+  return L.divIcon({className:'',html:`<div style="background:${color};color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">${n}</div>`,iconSize:[26,26],iconAnchor:[13,13]})
+}
+function addRoute(mapId,spots,color,center,zoom){
+  const map=L.map(mapId,{scrollWheelZoom:false}).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
+  const coords=[];
+  spots.forEach((s,i)=>{
+    L.marker(s.ll,{icon:numIcon(i+1,color)}).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.info||''}`);
+    coords.push(s.ll);
+  });
+  if(coords.length>1){
+    L.polyline(coords,{color:color,weight:3,opacity:.7,dashArray:'8,8'}).addTo(map);
+    for(let i=0;i<coords.length-1;i++){
+      const a=coords[i],b=coords[i+1];
+      const d=map.distance(a,b);
+      const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const km=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
+      const mins=d<2000?Math.round(d/80)+'min步行':Math.round(d/500)+'min车程';
+      L.marker(mid,{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:rgba(0,0,0,.85);color:#fff;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;line-height:1.4">${km} · ${mins}</span>`,iconSize:null,iconAnchor:[50,12]})}).addTo(map);
+    }
+  }
+  new IntersectionObserver(e=>{if(e[0].isIntersecting)setTimeout(()=>map.invalidateSize(),300)},{threshold:.3}).observe(document.getElementById(mapId));
+  return map;
+}
+const mapHcm=addRoute('map-hcm-m',[
+  {ll:[10.7677,106.6895],name:'① Banh Mi Huynh Hoa',info:'Day1 法棍 · ¥12'},
+  {ll:[10.7680,106.6920],name:'② 范五老街',info:'Day1 逛吃夜市'},
+  {ll:[10.7725,106.6948],name:'③ Pho Viet Nam',info:'Day2 米其林河粉 · ¥30'},
+  {ll:[10.7798,106.6990],name:'④ 西贡大教堂',info:'Day2 打卡'},
+  {ll:[10.7735,106.7045],name:'⑤ Workshop Coffee',info:'Day2 亚洲第3 · ¥30'},
+  {ll:[10.7882,106.6910],name:'⑥ 粉红教堂',info:'Day2 情侣圣地'},
+  {ll:[10.7764,106.7032],name:'⑦ A O Show',info:'Day2 演出 · ¥150'},
+  {ll:[10.7725,106.6980],name:'⑧ Ben Thanh',info:'Day3 夜市'},
+  {ll:[10.7770,106.6953],name:'⑨ 统一宫',info:'Day3'},
+],'#1a56db',[10.7760,106.6970],14);
+L.marker([10.7810,106.7010],{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:#b87333;color:#fff;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">🏨 La Vela</span>`,iconSize:null,iconAnchor:[40,12]})}).addTo(mapHcm);
+L.marker([10.8184,106.6519],{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:#333;color:#fff;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ SGN</span>`,iconSize:null,iconAnchor:[30,12]})}).addTo(mapHcm);
+</script>
+</body>
+</html>

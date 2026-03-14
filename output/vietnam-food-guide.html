@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五一越南美食之旅 · 深圳出发</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fafaf8;--card:rgba(0,0,0,0.03);--card-hover:rgba(0,0,0,0.06);
+  --t1:#1a1a1a;--t2:#555;--dim:#999;
+  --gold:#b8960c;--pink:#c4547a;--warm:#b87333;--teal:#2a8a7a;--coral:#c45040;
+  --serif:'Cormorant',serif;--sans:'IBM Plex Sans',sans-serif;
+  --h1:clamp(3.2rem,7.5vw,6rem);--h2:clamp(2.3rem,5vw,3.5rem);--h3:clamp(1.5rem,3.2vw,2.4rem);
+  --body:clamp(1.25rem,2.2vw,1.75rem);--sm:clamp(1.15rem,1.8vw,1.5rem);
+  --pad:clamp(1rem,2.5vw,2.5rem);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--t1);background:var(--bg);line-height:1.5;font-weight:300}
+
+.slide{width:100vw;height:100vh;height:100dvh;scroll-snap-align:start;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.slide-content{flex:1;display:flex;flex-direction:column;justify-content:center;padding:var(--pad);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+.slide-content::-webkit-scrollbar{width:4px}
+.slide-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px}
+.slide-content.fill{justify-content:flex-start;gap:clamp(0.3rem,0.6vh,0.6rem)}
+
+h1{font-family:var(--serif);font-size:var(--h1);font-weight:400;line-height:1.15;color:var(--t1)}
+h2{font-family:var(--serif);font-size:var(--h2);font-weight:600;color:var(--t1);margin-bottom:2px}
+h3{font-family:var(--serif);font-size:var(--h3);font-weight:600;color:var(--gold)}
+p,li{font-size:var(--body);color:var(--t2);line-height:1.5}
+.label{font-size:var(--body);font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--gold)}
+
+.tag{display:inline-block;padding:5px 16px;border-radius:999px;font-size:var(--body);border:1px solid rgba(0,0,0,.12);color:var(--t2);margin:3px}
+.tag.gold{border-color:var(--gold);color:var(--gold)}
+.tag.pink{border-color:var(--pink);color:var(--pink)}
+
+/* IMAGE LAYOUTS */
+.photo-banner{display:flex;gap:6px;height:48vh;margin-bottom:clamp(.2rem,.4vh,.4rem)}
+.photo-banner img{flex:1;min-width:0;height:100%;object-fit:cover;border-radius:10px}
+.photo-row{display:flex;gap:6px;height:22vh}
+.photo-row img{flex:1;min-width:0;height:100%;object-fit:cover;border-radius:8px}
+
+.quote{background:var(--card);border-left:3px solid var(--gold);border-radius:0 12px 12px 0;padding:clamp(.5rem,1vh,.8rem) clamp(.8rem,1.5vw,1.2rem);flex:1;display:flex;flex-direction:column;justify-content:center}
+.quote p{font-size:var(--body);color:var(--t1);font-style:italic;line-height:1.45}
+.quote .attr{font-size:var(--sm);color:var(--gold);margin-top:5px;font-style:normal}
+
+.mini-table{width:100%;border-collapse:collapse;font-size:var(--body)}
+.mini-table th{text-align:left;color:var(--gold);font-weight:500;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.1)}
+.mini-table td{padding:10px 14px;color:var(--t2);border-bottom:1px solid rgba(0,0,0,.05)}
+.mini-table .hl{color:var(--warm);font-weight:600}
+
+.hotel{display:flex;gap:clamp(.5rem,1vw,.8rem);background:var(--card);border-radius:12px;padding:clamp(.5rem,1vh,.8rem) clamp(.8rem,1.5vw,1.2rem)}
+.hotel-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.hotel .thumb{width:clamp(90px,12vh,150px);height:clamp(90px,12vh,150px);object-fit:cover;border-radius:10px;flex-shrink:0;order:1}
+
+/* FOOD CARD GRID */
+.food-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,.5vw,8px);flex:1;min-height:0}
+.food-card{background:var(--card);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.food-card img{width:100%;flex:1;min-height:0;object-fit:cover}
+.food-card .fc-info{padding:clamp(4px,.6vh,8px) clamp(6px,.8vw,10px);flex-shrink:0}
+.food-card .fc-name{font-family:var(--serif);font-size:var(--h3);font-weight:700;color:var(--t1);line-height:1.25}
+.food-card .fc-price{font-size:var(--body);color:var(--warm);font-weight:700}
+.food-card .fc-quote{font-size:var(--body);color:var(--t2);font-style:italic;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+@media(max-width:900px){.food-grid{grid-template-columns:repeat(2,1fr)}}
+.hotel .name{font-family:var(--serif);font-size:var(--h3);font-weight:600;color:var(--t1)}
+.hotel .price{color:var(--warm);font-weight:600;font-size:var(--body)}
+.hotel .reason{font-size:var(--body);color:var(--t2);font-style:italic;margin-top:4px;line-height:1.45}
+.hotel .src-tag{font-size:var(--sm);color:var(--gold);margin-top:4px}
+
+.route-card{background:var(--card);border-radius:14px;padding:clamp(.6rem,1vh,1rem);display:flex;flex-direction:column;gap:clamp(.2rem,.4vh,.4rem);flex:1;overflow:hidden}
+.route-card img{width:100%;flex:1;min-height:0;object-fit:cover;border-radius:10px}
+.route-card .name{font-family:var(--serif);font-size:var(--h3);font-weight:600}
+.route-card .meta{font-size:var(--body);color:var(--t2)}
+.route-card .highlight{font-size:var(--sm);color:var(--dim)}
+
+.reco-box{background:linear-gradient(135deg,rgba(184,150,12,0.06),rgba(196,84,122,0.04));border:1px solid rgba(184,150,12,0.15);border-radius:12px;padding:clamp(.5rem,1vh,.8rem) clamp(.8rem,1.5vw,1.2rem);text-align:center}
+.reco-box .big{font-size:var(--h3);color:var(--warm);font-weight:600}
+
+/* BUDGET TABLE */
+.budget-table{width:100%;border-collapse:collapse;font-size:var(--h3)}
+.budget-table th{text-align:left;color:var(--gold);font-weight:700;padding:14px 20px;border-bottom:2px solid rgba(0,0,0,.12)}
+.budget-table td{padding:14px 20px;color:var(--t2);border-bottom:1px solid rgba(0,0,0,.05)}
+.budget-table tr:last-child td{border-bottom:2px solid rgba(0,0,0,.12);font-weight:700;color:var(--t1)}
+.budget-table .amt{text-align:right;font-weight:700;color:var(--warm);font-size:var(--h3)}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(.4rem,.8vw,.8rem)}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(.4rem,.8vw,.8rem)}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr}.photo-banner{height:35vh}.photo-row{height:18vh}}
+
+/* 手机横屏适配 */
+@media(orientation:landscape) and (max-height:500px){
+  :root{--h1:clamp(1.6rem,4vw,2.5rem);--h2:clamp(1.3rem,3vw,2rem);--h3:clamp(1rem,2vw,1.4rem);--body:clamp(0.85rem,1.4vw,1.1rem);--sm:clamp(0.8rem,1.2vw,1rem);--pad:clamp(0.5rem,1.5vw,1rem)}
+  .slide{scroll-snap-align:none;height:auto;min-height:100vh}
+  .photo-banner{height:40vh}
+  .photo-row{height:25vh}
+  .food-grid{grid-template-columns:repeat(4,1fr)}
+  .food-card .fc-name{font-size:clamp(0.85rem,1.4vw,1.1rem)}
+  .food-card .fc-price{font-size:clamp(0.8rem,1.2vw,1rem)}
+  .food-card .fc-quote{font-size:clamp(0.75rem,1.1vw,0.9rem)}
+  .budget-table{font-size:var(--body)}
+  .budget-table .amt{font-size:var(--body)}
+  .budget-table th,.budget-table td{padding:8px 12px}
+  .section-progress .sp-item{font-size:10px;padding:3px 6px}
+  .nav-dots{display:none}
+  .hotel .thumb{width:60px;height:60px}
+}
+
+/* DIVIDERS */
+.divider{text-align:center}.divider .slide-content{align-items:center;justify-content:center}
+.bg-coral{background:linear-gradient(135deg,#fff5f3,#fef0ee 30%,var(--bg))}
+.bg-teal{background:linear-gradient(135deg,#f0faf7,#e8f5f0 30%,var(--bg))}
+.bg-pink{background:linear-gradient(135deg,#fdf0f4,#fce8ef 30%,var(--bg))}
+
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.08;pointer-events:none}
+.orb-1{width:45vw;height:45vw;background:var(--pink);top:-12vw;right:-12vw}
+.orb-2{width:35vw;height:35vw;background:var(--gold);bottom:-8vw;left:-8vw}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.slide.visible .reveal{opacity:1;transform:translateY(0)}
+.reveal:nth-child(1){transition-delay:.1s}.reveal:nth-child(2){transition-delay:.15s}.reveal:nth-child(3){transition-delay:.2s}.reveal:nth-child(4){transition-delay:.25s}.reveal:nth-child(5){transition-delay:.3s}
+
+/* PROGRESS BAR — replaced by section nav bar */
+.progress-bar{display:none}
+/* SECTION PROGRESS NAV */
+.section-progress{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;height:36px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);box-shadow:0 1px 4px rgba(0,0,0,.06);font-family:var(--sans)}
+.section-progress .sp-item{flex:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--dim);cursor:pointer;position:relative;transition:all .3s;border-bottom:3px solid transparent}
+.section-progress .sp-item.active{color:var(--t1);font-weight:700;border-bottom-color:var(--gold)}
+.section-progress .sp-item.passed{color:var(--t2);border-bottom-color:rgba(184,150,12,0.3)}
+.section-progress .sp-item:hover{color:var(--t1);background:rgba(0,0,0,.02)}
+.nav-dots{position:fixed;right:clamp(10px,1.8vw,24px);top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:clamp(4px,.5vh,8px)}
+.nav-dots .dot{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.15);cursor:pointer;transition:all .3s}
+.nav-dots .dot.active{background:var(--gold);transform:scale(1.5)}
+
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<nav class="section-progress" id="sectionProgress">
+  <div class="sp-item" data-range="0-0">封面</div>
+  <div class="sp-item" data-range="1-2">总览</div>
+  <div class="sp-item" data-range="3-10">A 胡志明</div>
+  <div class="sp-item" data-range="11-17">B 岘港+会安</div>
+  <div class="sp-item" data-range="18-24">C 富国岛</div>
+  <div class="sp-item" data-range="25-25">Tips</div>
+  <div class="sp-item" data-range="26-26">结尾</div>
+</nav>
+
+<!-- ===== TITLE ===== -->
+<section class="slide" style="justify-content:center;align-items:center;text-align:center">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div>
+  <div class="slide-content" style="align-items:center;max-width:900px">
+    <div class="reveal" style="font-size:clamp(4rem,12vw,9rem)">🍜🇻🇳</div>
+    <div class="reveal label">深圳出发 · 2026 五一假期</div>
+    <h1 class="reveal">越南美食之旅</h1>
+    <p class="reveal" style="font-size:clamp(1.1rem,2.2vw,1.5rem);max-width:640px;margin:1rem 0">3 条路线 · 以吃为主 · 精确预算<br>小红书博主实测推荐 · 携程/Trip.com 实价</p>
+    <div class="reveal">
+      <span class="tag gold">4月30日出发</span>
+      <span class="tag pink">情侣美食游</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="slide">
+  <div class="slide-content fill">
+    <h2 class="reveal">三条路线 · 预算对比</h2>
+    <div class="g3 reveal" style="flex:1">
+      <div class="route-card" style="border:1px solid rgba(196,84,122,0.15)">
+        <img src="images/food_hochiminh_1_2.webp" alt="胡志明美食">
+        <div class="name" style="color:var(--coral)">A · 胡志明市</div>
+        <div class="meta">4天3晚 · 直飞 · <strong style="color:var(--warm)">两人约¥13,300</strong></div>
+        <div class="highlight">越南美食之都 · 河粉/法棍/咖啡 · ⭐ 首选推荐</div>
+      </div>
+      <div class="route-card" style="border:1px solid rgba(42,138,122,0.15)">
+        <img src="images/scenery_hoian_2_1.webp" alt="会安">
+        <div class="name" style="color:var(--teal)">B · 岘港+会安</div>
+        <div class="meta">5天4晚 · 经河内 · <strong style="color:var(--warm)">两人约¥10,900</strong></div>
+        <div class="highlight">高楼面/白玫瑰/广南面 · 最文艺</div>
+      </div>
+      <div class="route-card" style="border:1px solid rgba(196,84,122,0.2)">
+        <img src="images/scenery_phuquoc_kiss_2_2.webp" alt="富国岛">
+        <div class="name" style="color:var(--pink)">C · 富国岛</div>
+        <div class="meta">5天4晚 · 免签 · <strong style="color:var(--warm)">两人约¥16,000</strong></div>
+        <div class="highlight">洋东夜市/鱼火锅/海鲜 · 最浪漫</div>
+      </div>
+    </div>
+    <p class="reveal" style="text-align:center;font-size:var(--sm);color:var(--dim)">预算为两人合计(机票+酒店+签证+餐饮+交通+门票) · <strong style="color:var(--pink)">富国岛免签省¥440</strong></p>
+  </div>
+</section>
+
+<!-- ===== RECOMMENDATION ===== -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--gold)">结论</div>
+      <h2>⭐ 我的推荐</h2>
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <!-- 左列：首选 -->
+      <div style="display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem)">
+        <div style="background:linear-gradient(135deg,rgba(196,80,64,0.06),rgba(184,150,12,0.04));border:2px solid var(--coral);border-radius:14px;padding:clamp(.8rem,1.5vh,1.2rem);flex:1;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:var(--h2);font-weight:700;color:var(--coral);font-family:var(--serif)">首选：A 胡志明市</div>
+          <div style="font-size:var(--h3);color:var(--warm);margin-top:6px">两人 ¥13,300 · 4/30下班后直飞</div>
+          <p style="margin-top:8px">CZ8473 22:55 下班直奔机场 · 美食种类最全<br>河粉/法棍/螃蟹/咖啡/米其林全覆盖<br>住 La Vela 五星泳池 · 若能4/29晚出发可省¥3,580</p>
+        </div>
+        <div style="background:var(--card);border:1px solid rgba(196,69,64,0.2);border-radius:12px;padding:clamp(.5rem,1vh,.8rem);text-align:center">
+          <p style="color:var(--coral)">💡 Hotel de Soie 库存紧张 · Sailing Club 只剩 2 间<br><strong>心动今天就订</strong></p>
+        </div>
+      </div>
+      <!-- 右列：备选 -->
+      <div style="display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem)">
+        <div style="background:var(--card);border:1px solid rgba(42,138,122,0.25);border-radius:14px;padding:clamp(.8rem,1.5vh,1.2rem);flex:1;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:var(--h3);font-weight:700;color:var(--teal);font-family:var(--serif)">备选：B 岘港+会安</div>
+          <div style="font-size:var(--body);color:var(--warm);margin-top:4px">两人 ¥10,900 · 只多¥1,200</div>
+          <p style="margin-top:8px">Pho Bac 63 神级河粉 · 会安独有高楼面白玫瑰<br>佛手桥+放水灯 = 最有故事感<br>住 Hotel de Soie ¥530/晚 性价比之王</p>
+        </div>
+        <div style="background:var(--card);border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:clamp(.8rem,1.5vh,1.2rem);flex:1;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:var(--h3);font-weight:700;color:var(--dim);font-family:var(--serif)">C 富国岛 · 预算充足再考虑</div>
+          <div style="font-size:var(--body);color:var(--warm);margin-top:4px">两人 ¥16,000 · 省钱版 ¥10,600</div>
+          <p style="margin-top:8px">免签+海鲜夜市+日落缆车确实浪漫<br>但酒店贵（Sailing Club ¥1,671/晚）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== A: 胡志明 ========== -->
+<section class="slide divider bg-coral">
+  <div class="slide-content">
+    <div class="photo-banner reveal">
+      <img src="images/food_hochiminh_1_2.webp" alt="胡志明美食">
+      <img src="images/food_hochiminh_2_1.webp" alt="胡志明美食">
+      <img src="images/food_hochiminh_1_3.webp" alt="胡志明美食">
+    </div>
+    <div class="label reveal" style="color:var(--coral)">方案 A</div>
+    <h1 class="reveal">胡志明市</h1>
+    <p class="reveal" style="font-size:var(--h3)">越南美食之都 · 4天3晚 · 两人约¥13,300</p>
+  </div>
+</section>
+
+<!-- A: FOOD 1 -->
+<section class="slide" id="hcm-food-1">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>🍜 博主推荐必吃 TOP 8</h2>
+    </div>
+    <div class="food-grid reveal">
+      <div class="food-card"><img src="images/food_hcm_03_banhmi_chao.webp"><div class="fc-info"><div class="fc-name">1. Pizza 4P's 🏆</div><div class="fc-price">¥120/人</div><div class="fc-quote">"四种烤奶酪香而不腻。排！你就吃吧！" @毛儿妈i辣椒 1,435赞</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_07_banhcanhcua87.webp"><div class="fc-info"><div class="fc-name">2. Pho Viet Nam</div><div class="fc-price">¥30 · 米其林</div><div class="fc-quote">"汤底怎么这么鲜甜！买单才80块你敢信" @Scarlett</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_06_pho_vietnam.webp"><div class="fc-info"><div class="fc-name">3. Nha Tu 米其林</div><div class="fc-price">¥150/人</div><div class="fc-quote">"三刷的店，越南坠好吃的一顿" @八个瑞士卷 1,407赞</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_01_pizza4ps.webp"><div class="fc-info"><div class="fc-name">4. Banh Canh Cua 87</div><div class="fc-price">¥20/人</div><div class="fc-quote">"虾蟹粉配料丰富，本地苍蝇馆超高性价比" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_11_niku_fella.webp"><div class="fc-info"><div class="fc-name">5. Hoa Tuc 米其林</div><div class="fc-price">¥120/人</div><div class="fc-quote">"照着点评推荐点，每个菜出品都不错" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_05_nha_tu.webp"><div class="fc-info"><div class="fc-name">6. Man Moi 创意菜</div><div class="fc-price">¥100/人</div><div class="fc-quote">"据说是安吉丽娜朱莉喜欢的餐厅，装修好看" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_10_cafe_linh.webp"><div class="fc-info"><div class="fc-name">7. Ca Phe Linh</div><div class="fc-price">¥15 · 复古咖啡</div><div class="fc-quote">"坐在街边喝冰滴，仿佛时间倒退了" @肯尼.伍 346赞</div></div></div>
+      <div class="food-card"><img src="images/food_hcm_15_banhmi_hoama.webp"><div class="fc-info"><div class="fc-name">8. Bep Ong Cau</div><div class="fc-price">¥25/人</div><div class="fc-quote">"排骨牛肉粉，好吃到给了小费" @八个瑞士卷</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- A: FOOD 2 -->
+<section class="slide" id="hcm-food-2">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>☕ 咖啡 + 更多美食 + 夜市</h2>
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"The Workshop 真的很好喝！朋友喝了7杯咖啡因过量了。2杯咖啡+提拉米苏才¥60"</p><div class="attr">@小努今天吃可颂 · 1,153赞 · 亚洲第3</div></div>
+      <div class="quote"><p>"Banh Mi Hoa Ma 铁板煎蛋法棍，鸡蛋滋滋冒油配火腿培根，加越南冰咖啡注入灵魂！"</p><div class="attr">@雷玛丽speaking · 1,185赞 · 人均¥30</div></div>
+    </div>
+    <div class="photo-row reveal" style="height:32vh">
+      <img src="images/food_hcm_01_pizza4ps.webp" alt="美食" onerror="this.src='images/food_hochiminh_2_2.webp'">
+      <img src="images/food_hcm_06_pho_vietnam.webp" alt="美食" onerror="this.src='images/food_hochiminh_2_3.webp'">
+      <img src="images/food_hcm_11_niku_fella.webp" alt="咖啡" onerror="this.src='images/food_hochiminh_1_1.webp'">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"Cuc Gach Quan 越南菜天花板！好几层楼全是绿植包围，很适合约会拍照"</p><div class="attr">@八个瑞士卷 · 1,407赞 · 米其林 · 人均¥150</div></div>
+      <div class="quote"><p>"Ca phe Linh 复古咖啡馆，坐在街边喝冰滴，仿佛时间倒退了。一杯滴漏苦中带甜"</p><div class="attr">@肯尼.伍 · 346赞 · 人均¥15</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- A: FLIGHTS + HOTEL -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>✈️ 航班 + 🏨 酒店</h2>
+    </div>
+    <div class="photo-row reveal">
+      <img src="images/hotel_lavela.jpg" alt="La Vela">
+      <img src="images/hotel_cityoasis.jpg" alt="City Oasis">
+      <img src="images/hotel_president.jpg" alt="President Maison">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div>
+        <h3>去程 · 4月30日（下班后出发）</h3>
+        <table class="mini-table">
+          <tr><th>航班</th><th>时间</th><th>价格</th><th></th></tr>
+          <tr><td class="hl">CZ8473 ⭐ 南航</td><td>22:55→01:25+1</td><td class="hl">¥3,088/人</td><td style="color:var(--teal)">下班后唯一可选</td></tr>
+          <tr><td>ZH117 深航</td><td>00:15→01:50</td><td>¥1,298/人</td><td style="color:var(--dim)">凌晨·需4/29晚出发</td></tr>
+          <tr><td>CZ8465 南航</td><td>11:30→13:30</td><td>¥1,498/人</td><td style="color:var(--dim)">上午·需请假</td></tr>
+        </table>
+        <h3 style="margin-top:.6rem">回程 · 5月3日</h3>
+        <table class="mini-table">
+          <tr><td class="hl">ZH118 ⭐ 深航</td><td>02:50→06:30</td><td class="hl">¥1,083/人</td><td style="color:var(--teal)">红眼回·不浪费白天</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>推荐酒店</h3>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">La Vela Saigon ⭐</div><div class="price">¥921/晚 · 3晚¥2,984</div><div class="reason">"至今见过最大的泳池，没有之一"</div></div></div>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">City Oasis</div><div class="price">¥731/晚 · 3晚¥2,194 · ⚠️剩1间</div><div class="reason">"独栋建筑，泳池+免费果汁"</div></div></div>
+      </div>
+    </div>
+    <div class="reco-box reveal"><div class="big">💡 推荐 CZ8473(下班直奔机场) + ZH118(红眼回) = ¥4,171/人</div></div>
+  </div>
+</section>
+
+<!-- A: BUDGET -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>💰 两人预算清单</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <table class="budget-table">
+        <tr><th>项目</th><th>明细</th><th class="amt">金额</th></tr>
+        <tr><td>✈️ 机票</td><td>CZ8473+ZH118 × 2人</td><td class="amt">¥8,342</td></tr>
+        <tr><td>🏨 酒店</td><td>La Vela Saigon 3晚</td><td class="amt">¥2,984</td></tr>
+        <tr><td>📋 签证</td><td>电子签 × 2人</td><td class="amt">¥440</td></tr>
+        <tr><td>🍜 餐饮</td><td>4天 · 人均¥100/天 × 2人</td><td class="amt">¥800</td></tr>
+        <tr><td>🚕 交通</td><td>Grab打车 4天</td><td class="amt">¥200</td></tr>
+        <tr><td>🎫 活动</td><td>A O Show + 古芝地道等 × 2人</td><td class="amt">¥500</td></tr>
+        <tr><td><strong>合计</strong></td><td></td><td class="amt" style="color:var(--coral);font-size:var(--h3)"><strong>¥13,266</strong></td></tr>
+      </table>
+    </div>
+    <div class="reco-box reveal"><p>💡 选 City Oasis 省 ¥790 → ¥12,476 · 若能4/29晚出发选 ZH117 省 ¥3,580 → <strong>¥9,686</strong></p></div>
+  </div>
+</section>
+
+<!-- A: ITINERARY -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>📅 4天3晚行程</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem);justify-content:space-evenly">
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--coral)">Day 1 · 4月30日 <a href="https://www.google.com/maps/dir/Banh%20Mi%20Huynh%20Hoa%20Ho%20Chi%20Minh/Bui%20Vien%20Walking%20Street/The%20Apartment%20Cafe%2042%20Nguyen%20Hue" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">ZH117 00:15→01:50 到达 · 酒店休息 · 下午范五老街逛吃 · 咖啡公寓发呆 · 晚上 Banh Mi Huynh Hoa 法棍</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--coral)">Day 2 · 5月1日 <a href="https://www.google.com/maps/dir/Pho%20Viet%20Nam%2014%20Pham%20Hong%20Thai/Notre%20Dame%20Cathedral%20Saigon/Saigon%20Central%20Post%20Office/The%20Workshop%20Coffee%2027%20Ngo%20Duc%20Ke/Tan%20Dinh%20Church%20Ho%20Chi%20Minh/Saigon%20Opera%20House" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">上午：Pho Viet Nam 米其林河粉 · 西贡大教堂 · 中央邮局<br>下午：The Workshop Coffee · 粉红教堂<br>晚上：A O Show 演出 · Ben Thanh 夜市吃海鲜</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--coral)">Day 3 · 5月2日 <a href="https://www.google.com/maps/dir/Cu%20Chi%20Tunnels/Ben%20Thanh%20Market%20Ho%20Chi%20Minh/Reunification%20Palace%20Saigon" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">上午：古芝地道半日游<br>下午：双层巴士夜游 · 统一宫<br>晚上：范五老街 Bar 街 · 路边摊春卷+甘蔗汁</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--coral)">Day 4 · 5月3日</div><div class="reason">酒店泳池享受最后半天 · ZH118 02:50→06:30 回深圳</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- A: TODO -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>✅ 出发前 TODO</h2>
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div style="display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem);justify-content:space-evenly">
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">📋 签证 · 出发前 30 天</div>
+          <div class="reason">☐ 电子签申请（¥220 淘宝代办 · 7 工作日）<br>☐ 护照有效期 ≥ 6 个月<br>☐ 准备 2 寸白底证件照电子版<br>☐ 打印签证批文 + 入境表</div>
+        </div></div>
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">✈️ 机票 · 确认后立刻订</div>
+          <div class="reason">☐ 去程 CZ8473 4/30 22:55→01:25+1 · ¥3,088/人（下班后出发）<br>☐ 回程 ZH118 5/3 02:50→06:30 · ¥1,083/人<br>☐ 携程/飞猪比价下单<br>☐ 截图返程机票（入境可能查）</div>
+        </div></div>
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">🏨 酒店 · 确认后立刻订</div>
+          <div class="reason">☐ La Vela Saigon 4/30-5/3 三晚 · ¥2,984<br>☐ 或 City Oasis 三晚 ¥2,194（⚠️仅剩1间）<br>☐ Trip.com / Booking.com 下单<br>☐ 保存确认邮件（入住需要）</div>
+        </div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem);justify-content:space-evenly">
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">🎫 门票/预约 · 出发前 7 天</div>
+          <div class="reason">☐ A O Show 演出票（5/1 晚）官网/Klook<br>☐ Pizza 4P's Google Maps 预约（5/1 晚餐）<br>☐ Nha Tu 预约（提前联系）<br>☐ 古芝地道半日游（5/2 · Klook/淘宝）</div>
+        </div></div>
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">💰 钱 · 出发前 3 天</div>
+          <div class="reason">☐ Visa/万事达信用卡（确认境外支付开通）<br>☐ 换 300 万越南盾现金（≈¥860）<br>☐ 手机开通境外支付（支付宝/微信不通用）<br>☐ 记汇率：1 CNY ≈ 3,500 VND</div>
+        </div></div>
+        <div class="hotel"><div class="hotel-info">
+          <div class="name" style="color:var(--coral)">🎒 行李清单</div>
+          <div class="reason">☐ 防晒霜 + 帽子 + 墨镜（30-36°C）<br>☐ 折叠伞（5 月雨季）<br>☐ 泳衣泳裤 · 拖鞋 · 速干毛巾<br>☐ 电话卡（Vinaphone 7天 ¥30 · 淘宝买）<br>☐ 充电宝 + 转换插头（越南用两脚扁插）<br>☐ Grab App 提前下载注册<br>☐ Google Maps 离线地图下载</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- A: MAP -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--coral)">方案 A · 胡志明</div>
+      <h2>📍 行程地图</h2>
+    </div>
+    <p class="reveal" style="font-size:var(--sm);color:var(--t2);line-height:1.8">❶法棍 ❷范五老街 ❸河粉 ❹大教堂 ❺Workshop Coffee ❻粉红教堂 ❼A O Show ❽Ben Thanh ❾统一宫 · 🏨La Vela · ✈️SGN机场</p>
+    <div id="map-hcm" class="reveal" style="flex:1;border-radius:12px;min-height:0;z-index:0"></div>
+  </div>
+</section>
+
+<!-- ========== B: 岘港+会安 ========== -->
+<section class="slide divider bg-teal">
+  <div class="slide-content">
+    <div class="photo-banner reveal">
+      <img src="images/scenery_banahill_1_2.webp" alt="巴拿山">
+      <img src="images/scenery_hoian_2_1.webp" alt="会安">
+      <img src="images/scenery_hoian_2_2.webp" alt="会安灯笼">
+    </div>
+    <div class="label reveal" style="color:var(--teal)">方案 B</div>
+    <h1 class="reveal">岘港 + 会安</h1>
+    <p class="reveal" style="font-size:var(--h3)">高楼面 × 白玫瑰 × 灯笼古城 · 5天4晚 · 两人约¥10,900</p>
+  </div>
+</section>
+
+<!-- B: FOOD 1 -->
+<section class="slide" id="danang-food-1">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>🍜 博主推荐必吃 TOP 8</h2>
+    </div>
+    <div class="food-grid reveal">
+      <div class="food-card"><img src="images/food_danang_02_bun_cha_ca.webp"><div class="fc-info"><div class="fc-name">1. Pho Bac 63 🏆</div><div class="fc-price">¥20 · 岘港</div><div class="fc-quote">"上海98的火车头都不如它！" @Uniiiiix 4位博主MVP</div></div></div>
+      <div class="food-card"><img src="images/food_danang_05_moc_quan2.webp"><div class="fc-info"><div class="fc-name">2. Moc Quan 海鲜</div><div class="fc-price">¥125 · 米其林</div><div class="fc-quote">"海鲜届海底捞，4人扶墙出共¥500" @Aimee酱肉包 3,187赞</div></div></div>
+      <div class="food-card"><img src="images/food_hoian_03_uncle_huan.webp"><div class="fc-info"><div class="fc-name">3. Madam Khanh</div><div class="fc-price">¥10 · 会安</div><div class="fc-quote">"现烤外脆里软，馅料满满" 5位博主推荐</div></div></div>
+      <div class="food-card"><img src="images/food_danang_07_heo_nuong2.webp"><div class="fc-info"><div class="fc-name">4. Heo Nuong Lu</div><div class="fc-price">¥30/两人 · 岘港</div><div class="fc-quote">"这辈子最好吃的脆皮五花肉！" @Uniiiiix</div></div></div>
+      <div class="food-card"><img src="images/food_danang_09_pho_bac63_2.webp"><div class="fc-info"><div class="fc-name">5. Bep Cuon 米其林</div><div class="fc-price">¥50 · 岘港</div><div class="fc-quote">"越南煎饼裹透明脆米皮，多重口感" @Aimee酱肉包</div></div></div>
+      <div class="food-card"><img src="images/food_danang_10_bali_quan.webp"><div class="fc-info"><div class="fc-name">6. Bun Cha Ca 109</div><div class="fc-price">¥20 · 米其林鱼粉</div><div class="fc-quote">"不起眼街边小店，6种粉汤底，巨好吃" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_hoian_02_banh_mi_queen.webp"><div class="fc-info"><div class="fc-name">7. Com Linh 烧鹅</div><div class="fc-price">会安</div><div class="fc-quote">"皮脆肉嫩，拼盘每个炸物好吃晕了" @埃利维特 1,258赞</div></div></div>
+      <div class="food-card"><img src="images/food_hoian_04_ancient_town.webp"><div class="fc-info"><div class="fc-name">8. Uncle Huan 蛋咖啡</div><div class="fc-price">¥16 · 会安</div><div class="fc-quote">"像喝液体的提拉米苏，树形拉花超出片" @博主实测</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- B: FOOD 2 -->
+<section class="slide" id="danang-food-2">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>🏮 会安五大特色 + 更多推荐</h2>
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"高楼面口感像更厚实的乌冬面，会安独有，只有会安的井水才做得出"</p><div class="attr">@恬小乖 · Cao Lau ¥15</div></div>
+      <div class="quote"><p>"广南面淡咖喱椰浆味，挤上青柠加小辣椒全倒进去搅拌，酸辣开胃"</p><div class="attr">@恬小乖 · Mi Quang ¥15</div></div>
+    </div>
+    <div class="photo-row reveal" style="height:32vh">
+      <img src="images/food_hoian_01_com_linh.webp" alt="会安美食" onerror="this.src='images/scenery_hoian_2_1.webp'">
+      <img src="images/food_danang_01_pho_bac63.webp" alt="岘港美食" onerror="this.src='images/scenery_banahill_1_3.webp'">
+      <img src="images/food_hoian_06_cao_lau.webp" alt="会安美食" onerror="this.src='images/scenery_hoian_2_3.webp'">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"A Xu 芝士花螺封神，皮皮虾鱿鱼新鲜，本宁波人认证的好海鲜"</p><div class="attr">@Uniiiiix · 海鲜大排档 人均¥150</div></div>
+      <div class="quote"><p>"Uncle Huan 鸡蛋咖啡，蛋奶泡香甜，像喝液体的提拉米苏"</p><div class="attr">会安 · ¥16 · ⚠️避雷 Morning Glory 鸡饭</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- B: FLIGHTS + HOTEL -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>✈️ 航班 + 🏨 酒店</h2>
+    </div>
+    <div class="photo-row reveal">
+      <img src="images/hotel_desoie.jpg" alt="Hotel de Soie">
+      <img src="images/hotel_hilton_danang.jpg" alt="希尔顿花园">
+      <img src="images/hotel_phuclong.jpg" alt="Phuc Long">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div>
+        <h3>去程 · 4月30日</h3>
+        <table class="mini-table">
+          <tr><td class="hl">ZH105 深航</td><td>16:35→17:40 河内</td><td class="hl">¥1,258/人</td></tr>
+          <tr><td>越捷</td><td>河内→岘港</td><td class="hl">~¥300/人</td></tr>
+        </table>
+        <h3 style="margin-top:.6rem">回程 · 5月4日</h3>
+        <table class="mini-table">
+          <tr><td>越捷</td><td>岘港→河内</td><td class="hl">~¥300/人</td></tr>
+          <tr><td class="hl">ZH104 深航</td><td>15:05→17:40</td><td class="hl">¥1,387/人</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>推荐酒店</h3>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">Hotel de Soie ⭐</div><div class="price">¥530/晚 · 4晚¥2,286 · 性价比之王</div><div class="reason">"welcome drink + cake，挑洗护用品味道"</div></div></div>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">希尔顿花园</div><div class="price">¥748/晚 · 4晚¥3,391</div><div class="reason">"无边泳池景色无敌"</div></div></div>
+      </div>
+    </div>
+    <div class="reco-box reveal"><div class="big">💡 往返 ¥3,245/人 · 住 Hotel de Soie</div></div>
+  </div>
+</section>
+
+<!-- B: BUDGET -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>💰 两人预算清单</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <table class="budget-table">
+        <tr><th>项目</th><th>明细</th><th class="amt">金额</th></tr>
+        <tr><td>✈️ 机票</td><td>ZH105+越捷+越捷+ZH104 × 2人</td><td class="amt">¥6,490</td></tr>
+        <tr><td>🏨 酒店</td><td>Hotel de Soie 4晚</td><td class="amt">¥2,286</td></tr>
+        <tr><td>📋 签证</td><td>电子签 × 2人</td><td class="amt">¥440</td></tr>
+        <tr><td>🍜 餐饮</td><td>5天 · 人均¥80/天 × 2人</td><td class="amt">¥800</td></tr>
+        <tr><td>🚕 交通</td><td>Grab + 岘港↔会安</td><td class="amt">¥300</td></tr>
+        <tr><td>🎫 活动</td><td>巴拿山门票 + SPA × 2人</td><td class="amt">¥600</td></tr>
+        <tr><td><strong>合计</strong></td><td></td><td class="amt" style="color:var(--teal);font-size:var(--h3)"><strong>¥10,916</strong></td></tr>
+      </table>
+    </div>
+    <div class="reco-box reveal"><p>💡 选希尔顿花园多花 ¥1,105 → 两人 <strong>¥12,021</strong>，但海景泳池值得</p></div>
+  </div>
+</section>
+
+<!-- B: ITINERARY -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>📅 5天4晚行程</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem);justify-content:space-evenly">
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--teal)">Day 1 · 4月30日</div><div class="reason">深圳→河内→岘港 · 到达入住 · 美溪海滩看日落</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--teal)">Day 2 · 5月1日 <a href="https://www.google.com/maps/dir/Ba%20Na%20Hills%20Da%20Nang/Moc%20Quan%20Da%20Nang" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">全天巴拿山（佛手桥+法式城堡）· 晚上岘港海鲜大排档</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--teal)">Day 3 · 5月2日 <a href="https://www.google.com/maps/dir/My%20Khe%20Beach%20Da%20Nang/Hoi%20An%20Ancient%20Town" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">上午美溪海滩 · SPA · 下午转会安 · 晚上古城夜游+放水灯+白玫瑰+高楼面</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--teal)">Day 4 · 5月3日 <a href="https://www.google.com/maps/dir/Banh%20Mi%20Phuong%20Hoi%20An/Cao%20Lau%20Ba%20Le%20Hoi%20An/Hoi%20An%20Night%20Market/Hoi%20An%20Japanese%20Bridge" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">稻田骑行 · Banh Mi Phuong 法棍 · 广南面 · 定做奥黛 · 会安夜市</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--teal)">Day 5 · 5月4日</div><div class="reason">会安→岘港→河内→深圳</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- B: MAP -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--teal)">方案 B · 岘港+会安</div>
+      <h2>📍 行程地图</h2>
+    </div>
+    <p class="reveal" style="font-size:var(--sm);color:var(--t2);line-height:1.8">❶美溪海滩 ❷巴拿山 ❸Moc Quan海鲜 ❹Pho Bac 63 ❺会安古城 ❻法棍Phuong ❼高楼面 ❽会安夜市 · 🏨de Soie · ✈️DAD机场</p>
+    <div id="map-danang" class="reveal" style="flex:1;border-radius:12px;min-height:0;z-index:0"></div>
+  </div>
+</section>
+
+<!-- ========== D: 富国岛 ========== -->
+<section class="slide divider bg-pink">
+  <div class="slide-content">
+    <div class="photo-banner reveal">
+      <img src="images/phuquoc_1_1.webp" alt="富国岛">
+      <img src="images/scenery_phuquoc_cable_1_2.webp" alt="缆车">
+      <img src="images/scenery_phuquoc_kiss_2_2.webp" alt="接吻桥">
+    </div>
+    <div class="label reveal" style="color:var(--pink)">方案 C</div>
+    <h1 class="reveal">富国岛</h1>
+    <p class="reveal" style="font-size:var(--h3)">免签 · 洋东夜市 × 鱼火锅 × 海鲜 · 5天4晚 · 两人约¥16,000</p>
+  </div>
+</section>
+
+<!-- D: FOOD 1 -->
+<section class="slide" id="phuquoc-food-1">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>🍜 博主推荐必吃 TOP 8</h2>
+    </div>
+    <div class="food-grid reveal">
+      <div class="food-card" style="background:linear-gradient(135deg,rgba(196,84,122,0.08),var(--card))"><div class="fc-info" style="flex:1;justify-content:center"><div class="fc-name">1. Nha Xua 68 🏆</div><div class="fc-price">¥45 · 只收现金</div><div class="fc-quote">"人均几十块吃到分币不剩，香茅鸡肉一绝" @YANG杨 1,268赞</div></div></div>
+      <div class="food-card"><img src="images/food_phuquoc_19_meo_kitchen.webp"><div class="fc-info"><div class="fc-name">2. OC DEM 大排档</div><div class="fc-price">¥45</div><div class="fc-quote">"性价比最高！空心菜炒牛肉疯狂推荐" @每天睡不醒</div></div></div>
+      <div class="food-card" style="background:linear-gradient(135deg,rgba(184,150,12,0.08),var(--card))"><div class="fc-info" style="flex:1;justify-content:center"><div class="fc-name">3. On The Rock</div><div class="fc-price">¥200 · 需邮件预约</div><div class="fc-quote">"全球十大最美落日餐厅，人生必去" @西米露 3,295赞</div></div></div>
+      <div class="food-card"><img src="images/food_phuquoc_04_bbq.webp"><div class="fc-info"><div class="fc-name">4. Pho Sai Gon</div><div class="fc-price">¥25 · 夜市旁</div><div class="fc-quote">"下飞机第一顿就惊艳！吃了两次" @每天睡不醒</div></div></div>
+      <div class="food-card" style="background:linear-gradient(135deg,rgba(42,138,122,0.08),var(--card))"><div class="fc-info" style="flex:1;justify-content:center"><div class="fc-name">5. MEO Kitchen</div><div class="fc-price">¥70 · 可刷卡</div><div class="fc-quote">"法棍配菜无敌，串一口下去爆汁！" @每天睡不醒 420赞</div></div></div>
+      <div class="food-card"><img src="images/food_phuquoc_03_on_the_rock.webp"><div class="fc-info"><div class="fc-name">6. Banh Mi Sai Gon</div><div class="fc-price">¥10 · 法棍</div><div class="fc-quote">"料特别多，口味多到选不过来" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_phuquoc_22_squid_hotpot.webp"><div class="fc-info"><div class="fc-name">7. Pho Bat Da 石锅粉</div><div class="fc-price">¥30</div><div class="fc-quote">"石锅现烫，特色牛骨汤粉" @博主实测</div></div></div>
+      <div class="food-card"><img src="images/food_phuquoc_10_home_pizza.webp"><div class="fc-info"><div class="fc-name">8. AnBa Cafe</div><div class="fc-price">¥15 · 咖啡甜品</div><div class="fc-quote">"花园咖啡馆，冰淇淋超好吃" @博主实测</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- D: FOOD 2 -->
+<section class="slide" id="phuquoc-food-2">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>🦀 海鲜 + 甜品 + 体验</h2>
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"Thien Thanh 七天内刷了两次，每道菜没踩雷，海鲜粥最美味。海胆一人能炫三五个"</p><div class="attr">@大喵ellie · 933赞 · 人均¥60-100</div></div>
+      <div class="quote"><p>"The Home Pizza 打脸了！披萨能好吃到哪去？结果双拼+蟹意面吃上瘾。烦死了咋这么好吃"</p><div class="attr">@Katariiina · 86赞 · 人均¥70-80</div></div>
+    </div>
+    <div class="photo-row reveal" style="height:32vh">
+      <img src="images/food_phuquoc_03_on_the_rock.webp" alt="On The Rock">
+      <img src="images/food_phuquoc_11_thien_thanh_seafood.webp" alt="海鲜">
+      <img src="images/food_phuquoc_13_coconut_icecream.webp" alt="椰子冰淇淋">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div class="quote"><p>"跨海缆车 7899m + 接吻桥追日落 + 8:50烟花秀 = 吃饱了散步的完美路线"</p><div class="attr">@吕明星 · 6,684赞 · 缆车¥194</div></div>
+      <div class="quote"><p>"椰子冰淇淋必吃！58 Cafe 本地人咖啡超好喝，咸奶油款最推荐"</p><div class="attr">@Baby Lynette · 355赞 · 人均¥10-15</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- D: FLIGHTS + HOTEL -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>✈️ 航班 + 🏨 酒店</h2>
+    </div>
+    <div class="photo-row reveal">
+      <img src="images/hotel_sailingclub.jpg" alt="Sailing Club">
+      <img src="images/hotel_newworld.jpg" alt="New World">
+      <img src="images/hotel_seashells.jpg" alt="Seashells">
+    </div>
+    <div class="g2 reveal" style="flex:1">
+      <div>
+        <h3>去程 · 4月30日→5月1日</h3>
+        <table class="mini-table">
+          <tr><td class="hl">ZH117 深航</td><td>00:15→01:50 胡志明</td><td class="hl">¥1,298/人</td></tr>
+          <tr><td class="hl">VJ339 越捷</td><td>07:50→08:50 富国岛</td><td class="hl">¥352/人</td></tr>
+        </table>
+        <h3 style="margin-top:.6rem">回程 · 5月5日</h3>
+        <table class="mini-table">
+          <tr><td class="hl">VJ334 越捷</td><td>09:50→10:50 胡志明</td><td class="hl">¥316/人</td></tr>
+          <tr><td class="hl">CZ8466 南航</td><td>14:30→18:20 深圳</td><td class="hl">¥1,417/人</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>推荐酒店</h3>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">Sailing Club ⭐</div><div class="price">¥1,671/晚 · 4晚¥7,216 · ⚠️剩2间</div><div class="reason">"独栋泳池别墅，度假感拉满"</div></div></div>
+        <div class="hotel" style="margin-top:.4rem"><div class="hotel-info"><div class="name">Vinholidays（省钱版）</div><div class="price">4晚¥1,848 · Booking 评分8.2</div><div class="reason">"预算有限首选，两人省 ¥5,368"</div></div></div>
+      </div>
+    </div>
+    <div class="reco-box reveal"><div class="big">💡 往返 ¥3,383/人 · 🇻🇳 免签不用办签证!</div></div>
+  </div>
+</section>
+
+<!-- D: BUDGET -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>💰 两人预算清单</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <table class="budget-table">
+        <tr><th>项目</th><th>明细</th><th class="amt">金额</th></tr>
+        <tr><td>✈️ 机票</td><td>ZH117+VJ339+VJ334+CZ8466 × 2人</td><td class="amt">¥6,766</td></tr>
+        <tr><td>🏨 酒店</td><td>Sailing Club 泳池别墅 4晚</td><td class="amt">¥7,216</td></tr>
+        <tr><td>📋 签证</td><td>免签!</td><td class="amt" style="color:var(--teal)">¥0</td></tr>
+        <tr><td>🍜 餐饮</td><td>5天 · 人均¥100/天 × 2人</td><td class="amt">¥1,000</td></tr>
+        <tr><td>🚕 交通</td><td>Grab打车 5天</td><td class="amt">¥300</td></tr>
+        <tr><td>🎫 活动</td><td>缆车¥388 + VinWonders等 × 2人</td><td class="amt">¥688</td></tr>
+        <tr><td><strong>合计</strong></td><td></td><td class="amt" style="color:var(--pink);font-size:var(--h3)"><strong>¥15,970</strong></td></tr>
+      </table>
+    </div>
+    <div class="reco-box reveal"><p>💡 选 Vinholidays 省 ¥5,368 → 两人 <strong>¥10,602</strong> · 免签还省了 ¥440</p></div>
+  </div>
+</section>
+
+<!-- D: ITINERARY -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>📅 5天4晚行程</h2>
+    </div>
+    <div class="reveal" style="flex:1;display:flex;flex-direction:column;gap:clamp(.3rem,.6vh,.6rem);justify-content:space-evenly">
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--pink)">Day 1 · 4月30日-5月1日</div><div class="reason">ZH117→胡志明休息 · VJ339→富国岛 · 入住泳池别墅 · 下午海滩发呆</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--pink)">Day 2 · 5月2日 <a href="https://www.google.com/maps/dir/Hon%20Thom%20Cable%20Car%20Phu%20Quoc/Sunset%20Town%20Phu%20Quoc/Kiss%20Bridge%20Phu%20Quoc/Dinh%20Cau%20Night%20Market%20Phu%20Quoc" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">上午南岛浮潜 · 下午跨海缆车+日落小镇 · 晚上接吻桥追日落 · 8:50烟花秀 · 洋东夜市吃海鲜</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--pink)">Day 3 · 5月3日 <a href="https://www.google.com/maps/dir/On%20The%20Rock%20Mango%20Bay%20Phu%20Quoc/Nha%20Xua%2068%20Phu%20Quoc" target="_blank" style="font-size:var(--sm);color:var(--gold);text-decoration:none">📍地图</a></div><div class="reason">上午酒店泳池 · 下午 On The Rock 悬崖餐厅蓝调时刻 · 晚上网红鱼火锅</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--pink)">Day 4 · 5月4日</div><div class="reason">VinWonders 主题乐园 或 北岛原始海滩 · Sunset Sanato 最后一场日落 · 海鲜烧烤告别宴</div></div></div>
+      <div class="hotel"><div class="hotel-info"><div class="name" style="color:var(--pink)">Day 5 · 5月5日</div><div class="reason">VJ334→胡志明 · CZ8466 14:30→18:20 回深圳</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- C: MAP -->
+<section class="slide">
+  <div class="slide-content fill">
+    <div class="reveal">
+      <div class="label" style="color:var(--pink)">方案 C · 富国岛</div>
+      <h2>📍 行程地图</h2>
+    </div>
+    <p class="reveal" style="font-size:var(--sm);color:var(--t2);line-height:1.8">❶缆车 ❷日落小镇 ❸接吻桥 ❹洋东夜市 ❺On The Rock ❻鱿鱼火锅 ❼VinWonders · 🏨Sailing Club · ✈️PQC机场</p>
+    <div id="map-phuquoc" class="reveal" style="flex:1;border-radius:12px;min-height:0;z-index:0"></div>
+  </div>
+</section>
+
+<!-- ===== TIPS ===== -->
+<section class="slide">
+  <div class="slide-content fill">
+    <h2 class="reveal">📋 出发前必读</h2>
+    <div class="g2 reveal" style="flex:1">
+      <div style="display:flex;flex-direction:column;justify-content:space-evenly">
+        <div>
+          <h3>🍜 吃喝贴士</h3>
+          <p>路边摊人均 ¥10-20 · 餐厅 ¥50-80<br>河粉 pho · 法棍 banh mi · 滴漏咖啡必尝<br>椰子 ¥3-5 · 甘蔗汁 ¥2 · 蛋咖啡 ¥10<br>街头春卷+越南粉卷随买随吃</p>
+        </div>
+        <div>
+          <h3>☀️ 天气装备</h3>
+          <p>30-36°C · 防晒霜+帽子+墨镜<br>5月初进雨季 · 每天一场阵雨 · 带伞<br>泳衣必带 · 拖鞋比运动鞋实用</p>
+        </div>
+        <div>
+          <h3>💕 情侣 Tips</h3>
+          <p>奥黛旗袍租一套拍照 ¥50-80<br>SPA 双人套餐 ¥150-300<br>日落 5:30-6:30 最佳</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:space-evenly">
+        <div>
+          <h3>💰 货币支付</h3>
+          <p>1 CNY ≈ 3,500 VND · 面额大仔细数<br>备 Visa 卡 + 300万越南盾(¥860)现金<br>市场砍价先报一半</p>
+        </div>
+        <div>
+          <h3>📱 实用工具</h3>
+          <p>Grab 打车（比出租便宜一半）<br>Vinaphone 电话卡 7天 ¥30<br>只喝瓶装水 · Google Maps 导航</p>
+        </div>
+        <div>
+          <h3>⚠️ 安全提醒</h3>
+          <p>过马路匀速走不要停<br>飞车党注意 · 斜挎包防抢<br>入境可能查返程机票截图</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CLOSING ===== -->
+<section class="slide" style="justify-content:center;align-items:center;text-align:center">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div>
+  <div class="slide-content" style="align-items:center">
+    <div class="reveal" style="font-size:clamp(3rem,8vw,6rem)">🍜✨🇻🇳</div>
+    <h1 class="reveal" style="font-family:var(--serif);font-style:italic">吃遍越南，旅途愉快</h1>
+    <p class="reveal" style="max-width:640px;margin-top:1rem;font-size:var(--body)">
+      <strong>数据来源</strong><br>
+      小红书 15+ 篇高赞笔记 · 机票：携程 2026-04-30 实时查询<br>
+      酒店：Trip.com / Booking.com 精确查询 · 含房型和库存<br>
+      预算为两人合计，实际消费因个人习惯有浮动
+    </p>
+  </div>
+</section>
+
+<script>
+class SlidePresentation{
+  constructor(){this.slides=document.querySelectorAll('.slide');this.currentSlide=0;this.setupObserver();this.setupKeyboard();this.setupProgress();this.setupDots()}
+  setupObserver(){const o=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');const i=[...this.slides].indexOf(e.target);if(i>=0){this.currentSlide=i;this.updateDots();this.updateProgress()}}})},{threshold:.35});this.slides.forEach(s=>o.observe(s))}
+  setupKeyboard(){document.addEventListener('keydown',e=>{if(['ArrowDown',' ','PageDown','ArrowRight'].includes(e.key)){e.preventDefault();this.goTo(this.currentSlide+1)}else if(['ArrowUp','PageUp','ArrowLeft'].includes(e.key)){e.preventDefault();this.goTo(this.currentSlide-1)}})}
+  goTo(i){i=Math.max(0,Math.min(i,this.slides.length-1));this.slides[i].scrollIntoView({behavior:'smooth'})}
+  setupProgress(){window.addEventListener('scroll',()=>this.updateProgress())}
+  updateProgress(){document.getElementById('progressBar').style.width=((this.currentSlide+1)/this.slides.length)*100+'%'}
+  setupDots(){const n=document.getElementById('navDots');this.slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.addEventListener('click',()=>this.goTo(i));n.appendChild(d)})}
+  updateDots(){
+    document.querySelectorAll('.nav-dots .dot').forEach((d,i)=>d.classList.toggle('active',i===this.currentSlide));
+    // update section progress bar
+    document.querySelectorAll('.section-progress .sp-item').forEach(item=>{
+      const [start,end]=item.dataset.range.split('-').map(Number);
+      item.classList.toggle('active',this.currentSlide>=start&&this.currentSlide<=end);
+      item.classList.toggle('passed',this.currentSlide>end);
+    });
+  }
+}
+const pres=new SlidePresentation();
+// section progress click
+document.querySelectorAll('.section-progress .sp-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const start=parseInt(item.dataset.range.split('-')[0]);
+    pres.goTo(start);
+  });
+});
+
+// ===== COVERAGE STATS =====
+function calcCoverage(){
+  document.querySelectorAll('.slide').forEach(slide=>{
+    const sc=slide.querySelector('.slide-content');
+    if(!sc)return;
+    const slideH=slide.clientHeight;
+    const slideW=slide.clientWidth;
+    const slideArea=slideH*slideW;
+    // 遍历所有叶子节点（文字、图片），累加实际占用面积
+    let usedArea=0;
+    sc.querySelectorAll('img,table,p,h1,h2,h3,div.big,div.name,div.price,div.reason,div.src-tag,div.attr,div.meta,div.highlight,span.tag').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      if(r.width>0&&r.height>0){
+        usedArea+=r.width*r.height;
+      }
+    });
+    // 去重：叶子节点可能重叠，cap 到 100%
+    const pct=Math.min(100,Math.round((usedArea/slideArea)*100));
+    let color='#22c55e';
+    if(pct<40) color='#ef4444';
+    else if(pct<60) color='#f59e0b';
+    let badge=slide.querySelector('.cov-badge');
+    if(!badge){badge=document.createElement('div');badge.className='cov-badge';badge.style.cssText='position:absolute;bottom:12px;right:12px;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;opacity:0.75;z-index:10;pointer-events:none';slide.appendChild(badge)}
+    badge.style.background=color;
+    badge.style.color='#fff';
+    badge.textContent=pct+'%';
+  });
+}
+setTimeout(calcCoverage,2000);
+window.addEventListener('resize',()=>setTimeout(calcCoverage,500));
+
+// ===== LEAFLET MAPS =====
+function numIcon(n,color){
+  return L.divIcon({className:'',html:`<div style="background:${color};color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">${n}</div>`,iconSize:[28,28],iconAnchor:[14,14]})
+}
+function hotelIcon(label){
+  return L.divIcon({className:'',html:`<span style="display:inline-block;background:#b87333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">🏨 ${label}</span>`,iconSize:null,iconAnchor:[60,14]})
+}
+function addRoute(mapId,spots,color,center,zoom){
+  const map=L.map(mapId,{scrollWheelZoom:false}).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+  const coords=[];
+  spots.forEach((s,i)=>{
+    const m=L.marker(s.ll,{icon:numIcon(i+1,color)}).addTo(map);
+    m.bindPopup(`<b>${s.name}</b><br>${s.info||''}`);
+    coords.push(s.ll);
+  });
+  if(coords.length>1){
+    L.polyline(coords,{color:color,weight:3,opacity:.7,dashArray:'8,8'}).addTo(map);
+    // distance labels
+    for(let i=0;i<coords.length-1;i++){
+      const a=coords[i],b=coords[i+1];
+      const d=map.distance(a,b);
+      const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const km=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
+      const mins=d<2000?Math.round(d/80)+'min步行':Math.round(d/500)+'min车程';
+      L.marker(mid,{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:rgba(0,0,0,.85);color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;line-height:1.4">${km} · ${mins}</span>`,iconSize:null,iconAnchor:[50,12]})}).addTo(map);
+    }
+  }
+  // fix map render on scroll-snap
+  new IntersectionObserver(e=>{if(e[0].isIntersecting)setTimeout(()=>map.invalidateSize(),300)},{threshold:.3}).observe(document.getElementById(mapId));
+  return map;
+}
+
+// 胡志明
+const mapHcm=addRoute('map-hcm',[
+  {ll:[10.7677,106.6895],name:'① Banh Mi Huynh Hoa',info:'Day1 法棍 · ¥12'},
+  {ll:[10.7680,106.6920],name:'② 范五老街',info:'Day1 逛吃夜市'},
+  {ll:[10.7725,106.6948],name:'③ Pho Viet Nam',info:'Day2 米其林河粉 · ¥30'},
+  {ll:[10.7798,106.6990],name:'④ 西贡大教堂',info:'Day2 打卡'},
+  {ll:[10.7735,106.7045],name:'⑤ The Workshop Coffee',info:'Day2 亚洲第3 · ¥30'},
+  {ll:[10.7882,106.6910],name:'⑥ 粉红教堂',info:'Day2 情侣圣地'},
+  {ll:[10.7764,106.7032],name:'⑦ A O Show',info:'Day2 晚上演出 · ¥150'},
+  {ll:[10.7725,106.6980],name:'⑧ Ben Thanh 夜市',info:'Day3 海鲜+购物'},
+  {ll:[10.7770,106.6953],name:'⑨ 统一宫',info:'Day3 历史景点'},
+],'#1a56db',[10.7760,106.6970],14);
+L.marker([10.7810,106.7010],{icon:hotelIcon('La Vela ¥921/晚 ⭐')}).addTo(mapHcm).bindPopup('<b>La Vela Saigon</b><br>五星·超大泳池·3晚¥2,984');
+L.marker([10.8184,106.6519],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 新山一机场 SGN</span>',iconSize:null,iconAnchor:[70,14]})}).addTo(mapHcm);
+
+// 岘港+会安
+const mapDn=addRoute('map-danang',[
+  {ll:[16.0544,108.2472],name:'① 美溪海滩',info:'Day1/3 冲浪+日落'},
+  {ll:[15.9975,107.9894],name:'② 巴拿山',info:'Day2 佛手桥 · 全天'},
+  {ll:[16.0620,108.2458],name:'③ Moc Quan 海鲜',info:'Day2晚 米其林 · ¥125/人'},
+  {ll:[16.0580,108.2380],name:'④ Pho Bac 63',info:'神级河粉 · ¥20'},
+  {ll:[15.8801,108.3380],name:'⑤ 会安古城',info:'Day3晚 放水灯+灯笼'},
+  {ll:[15.8771,108.3281],name:'⑥ Banh Mi Phuong',info:'Day4 法棍 · ¥10'},
+  {ll:[15.8785,108.3290],name:'⑦ Cao Lau Ba Le',info:'Day4 高楼面 · ¥15'},
+  {ll:[15.8775,108.3270],name:'⑧ 会安夜市',info:'Day4 小吃+白玫瑰'},
+],'#7c3aed',[15.97,108.16],11);
+L.marker([16.0560,108.2410],{icon:hotelIcon('Hotel de Soie ¥530/晚 ⭐')}).addTo(mapDn).bindPopup('<b>Hotel de Soie</b><br>精品四星·性价比之王·4晚¥2,286');
+L.marker([16.0439,108.1990],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 岘港机场 DAD</span>',iconSize:null,iconAnchor:[60,14]})}).addTo(mapDn);
+
+// 富国岛
+const mapPq=addRoute('map-phuquoc',[
+  {ll:[10.0549,103.9656],name:'① 跨海缆车',info:'Day2 7899m · ¥194'},
+  {ll:[10.0580,103.9640],name:'② 日落小镇',info:'Day2 下午'},
+  {ll:[10.0570,103.9645],name:'③ 接吻桥',info:'Day2 追日落+8:50烟花'},
+  {ll:[10.2142,103.9596],name:'④ 洋东夜市',info:'Day2晚 人均¥70'},
+  {ll:[10.2800,103.9100],name:'⑤ On The Rock',info:'Day3 全球十大日落餐厅 · ¥200'},
+  {ll:[10.2170,103.9630],name:'⑥ Nha Xua 68',info:'Day3 鱿鱼火锅 · ¥45'},
+  {ll:[10.3250,103.8540],name:'⑦ VinWonders',info:'Day4 主题乐园'},
+],'#e85d04',[10.18,103.92],11);
+L.marker([10.1750,103.9620],{icon:hotelIcon('Sailing Club ¥1,671/晚 ⭐')}).addTo(mapPq).bindPopup('<b>Sailing Club Signature</b><br>独栋泳池别墅·4晚¥7,216·⚠️剩2间');
+L.marker([10.2270,103.9670],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 富国岛机场 PQC</span>',iconSize:null,iconAnchor:[60,14]})}).addTo(mapPq);
+</script>
+</body>
+</html>
