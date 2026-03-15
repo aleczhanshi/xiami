@@ -1,6 +1,13 @@
-# u-life: AI-Powered Travel Guide Generator
+# xiami 🦐 — AI-Powered Travel Guide Generator
 
-Use Claude Code + custom Skills to automatically research, plan, and generate beautiful travel guides.
+> 给一个目的地和日期，自动调研小红书、查机票酒店实价、生成带地图的 HTML 攻略
+
+**Choose your platform / 选择你的平台：**
+
+| Platform | Setup | README |
+|---|---|---|
+| 🤖 **Claude Code** | `bash setup.sh` | 👇 You are here |
+| 🦞 **OpenClaw** | `bash openclaw/setup.sh` | [openclaw/README.md](openclaw/README.md) |
 
 ## What This Project Does
 
