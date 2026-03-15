@@ -818,7 +818,7 @@ function numIcon(n,color){
   return L.divIcon({className:'',html:`<div style="background:${color};color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff">${n}</div>`,iconSize:[28,28],iconAnchor:[14,14]})
 }
 function hotelIcon(label){
-  return L.divIcon({className:'',html:`<span style="display:inline-block;background:#b87333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">🏨 ${label}</span>`,iconSize:null,iconAnchor:[60,14]})
+  return L.divIcon({className:'',html:`<span style="display:inline-block;background:#b87333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4;position:relative;z-index:1000">🏨 ${label}</span>`,iconSize:null,iconAnchor:[60,14]})
 }
 function addRoute(mapId,spots,color,center,zoom){
   const map=L.map(mapId,{scrollWheelZoom:false}).setView(center,zoom);
@@ -830,15 +830,15 @@ function addRoute(mapId,spots,color,center,zoom){
     coords.push(s.ll);
   });
   if(coords.length>1){
-    L.polyline(coords,{color:color,weight:3,opacity:.7,dashArray:'8,8'}).addTo(map);
-    // distance labels
+    const line=L.polyline(coords,{color:color,weight:4,opacity:.7,dashArray:'8,8'}).addTo(map);
+    // distance labels — 默认隐藏，鼠标悬停路线时显示
     for(let i=0;i<coords.length-1;i++){
       const a=coords[i],b=coords[i+1];
       const d=map.distance(a,b);
       const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
       const km=d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
       const mins=d<2000?Math.round(d/80)+'min步行':Math.round(d/500)+'min车程';
-      L.marker(mid,{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:rgba(0,0,0,.85);color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;line-height:1.4">${km} · ${mins}</span>`,iconSize:null,iconAnchor:[50,12]})}).addTo(map);
+      L.marker(mid,{icon:L.divIcon({className:'',html:`<span style="display:inline-block;background:rgba(0,0,0,.75);color:#fff;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.4">${km} · ${mins}</span>`,iconSize:null,iconAnchor:[50,12]}),zIndexOffset:-1000}).addTo(map);
     }
   }
   // fix map render on scroll-snap
@@ -858,8 +858,8 @@ const mapHcm=addRoute('map-hcm',[
   {ll:[10.7725,106.6980],name:'⑧ Ben Thanh 夜市',info:'Day3 海鲜+购物'},
   {ll:[10.7770,106.6953],name:'⑨ 统一宫',info:'Day3 历史景点'},
 ],'#1a56db',[10.7760,106.6970],14);
-L.marker([10.7810,106.7010],{icon:hotelIcon('La Vela ¥921/晚 ⭐')}).addTo(mapHcm).bindPopup('<b>La Vela Saigon</b><br>五星·超大泳池·3晚¥2,984');
-L.marker([10.8184,106.6519],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 新山一机场 SGN</span>',iconSize:null,iconAnchor:[70,14]})}).addTo(mapHcm);
+L.marker([10.7810,106.7010],{icon:hotelIcon('La Vela ¥921/晚 ⭐'),zIndexOffset:2000}).addTo(mapHcm).bindPopup('<b>La Vela Saigon</b><br>五星·超大泳池·3晚¥2,984');
+L.marker([10.8184,106.6519],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 新山一机场 SGN</span>',iconSize:null,iconAnchor:[70,14]}),zIndexOffset:2000}).addTo(mapHcm);
 
 // 岘港+会安
 const mapDn=addRoute('map-danang',[
@@ -872,8 +872,8 @@ const mapDn=addRoute('map-danang',[
   {ll:[15.8785,108.3290],name:'⑦ Cao Lau Ba Le',info:'Day4 高楼面 · ¥15'},
   {ll:[15.8775,108.3270],name:'⑧ 会安夜市',info:'Day4 小吃+白玫瑰'},
 ],'#7c3aed',[15.97,108.16],11);
-L.marker([16.0560,108.2410],{icon:hotelIcon('Hotel de Soie ¥530/晚 ⭐')}).addTo(mapDn).bindPopup('<b>Hotel de Soie</b><br>精品四星·性价比之王·4晚¥2,286');
-L.marker([16.0439,108.1990],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 岘港机场 DAD</span>',iconSize:null,iconAnchor:[60,14]})}).addTo(mapDn);
+L.marker([16.0560,108.2410],{icon:hotelIcon('Hotel de Soie ¥530/晚 ⭐'),zIndexOffset:2000}).addTo(mapDn).bindPopup('<b>Hotel de Soie</b><br>精品四星·性价比之王·4晚¥2,286');
+L.marker([16.0439,108.1990],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4;position:relative;">✈️ 岘港机场 DAD</span>',iconSize:null,iconAnchor:[60,14]}),zIndexOffset:2000}).addTo(mapDn);
 
 // 富国岛
 const mapPq=addRoute('map-phuquoc',[
@@ -885,8 +885,8 @@ const mapPq=addRoute('map-phuquoc',[
   {ll:[10.2170,103.9630],name:'⑥ Nha Xua 68',info:'Day3 鱿鱼火锅 · ¥45'},
   {ll:[10.3250,103.8540],name:'⑦ VinWonders',info:'Day4 主题乐园'},
 ],'#e85d04',[10.18,103.92],11);
-L.marker([10.1750,103.9620],{icon:hotelIcon('Sailing Club ¥1,671/晚 ⭐')}).addTo(mapPq).bindPopup('<b>Sailing Club Signature</b><br>独栋泳池别墅·4晚¥7,216·⚠️剩2间');
-L.marker([10.2270,103.9670],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4">✈️ 富国岛机场 PQC</span>',iconSize:null,iconAnchor:[60,14]})}).addTo(mapPq);
+L.marker([10.1750,103.9620],{icon:hotelIcon('Sailing Club ¥1,671/晚 ⭐'),zIndexOffset:2000}).addTo(mapPq).bindPopup('<b>Sailing Club Signature</b><br>独栋泳池别墅·4晚¥7,216·⚠️剩2间');
+L.marker([10.2270,103.9670],{icon:L.divIcon({className:'',html:'<span style="display:inline-block;background:#333;color:#fff;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);white-space:nowrap;border:2px solid #fff;line-height:1.4;position:relative;">✈️ 富国岛机场 PQC</span>',iconSize:null,iconAnchor:[60,14]}),zIndexOffset:2000}).addTo(mapPq);
 </script>
 </body>
 </html>
