@@ -115,23 +115,22 @@ Any server with nginx. The skills use `scp` + nginx static hosting.
 ## Quick Start
 
 ```bash
-# 1. Clone this repo
+# 1. Clone and setup (one command)
 git clone https://github.com/aleczhanshi/xiami.git
 cd xiami
+bash setup.sh
 
-# 2. Copy skills to Claude Code (makes them available in all projects)
-cp -r skills/* ~/.claude/skills/
-
-# 3. Copy CLAUDE.md (project context for Claude Code)
-# CLAUDE.md stays in the repo root — Claude Code reads it automatically
-
-# 4. (Optional) Copy memory/feedback rules
-mkdir -p ~/.claude/projects/$(pwd | sed 's|/|-|g')/memory
-cp memory/*.md ~/.claude/projects/$(pwd | sed 's|/|-|g')/memory/
-
-# 5. Start Claude Code
+# 2. Start Claude Code
 claude
+
+# That's it! Skills are auto-registered, CLAUDE.md is auto-loaded.
 ```
+
+### What `setup.sh` does:
+- Installs Python dependencies (`playwright`, `requests`)
+- Installs Chromium browser for Playwright
+- Copies 6 skills to `~/.claude/skills/`
+- Checks if XHS MCP server is configured (gives instructions if not)
 
 ## Example: Build a Travel Guide from Scratch
 
