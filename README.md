@@ -70,32 +70,109 @@ The `memory/` folder contains hard-won lessons from iterative development:
 
 ## Prerequisites
 
-- [Claude Code](https://claude.ai/code) CLI installed
-- Python 3 + Playwright (`pip install playwright && playwright install`)
-- XHS login cookies at `~/.mcp/rednote/cookies.json` (for XHS scraping)
-- A server with nginx for deployment (optional)
+### 1. Claude Code CLI
+```bash
+# Install Claude Code
+npm install -g @anthropic-ai/claude-code
+```
+
+### 2. Python + Playwright (for web scraping)
+```bash
+pip install playwright
+playwright install chromium
+```
+
+### 3. XHS (Xiaohongshu) MCP Server + Cookies
+The `/scrape-xhs` skill requires the rednote MCP server and login cookies:
+
+```bash
+# Install rednote MCP server (see https://github.com/anthropics/claude-code for MCP setup)
+# Then login to XHS and export cookies:
+
+# Option A: Use browser extension "EditThisCookie" to export cookies from xiaohongshu.com
+# Save as JSON to: ~/.mcp/rednote/cookies.json
+
+# Option B: Use Playwright to login and save cookies programmatically
+python3 -c "
+from playwright.sync_api import sync_playwright
+import json, os
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=False)
+    page = browser.new_page()
+    page.goto('https://www.xiaohongshu.com')
+    input('Login in browser, then press Enter...')
+    cookies = page.context.cookies()
+    os.makedirs(os.path.expanduser('~/.mcp/rednote'), exist_ok=True)
+    json.dump(cookies, open(os.path.expanduser('~/.mcp/rednote/cookies.json'), 'w'))
+    print(f'Saved {len(cookies)} cookies')
+    browser.close()
+"
+```
+
+### 4. Server for deployment (optional)
+Any server with nginx. The skills use `scp` + nginx static hosting.
 
 ## Quick Start
 
 ```bash
-# 1. Copy skills to your Claude Code
+# 1. Clone this repo
+git clone https://github.com/aleczhanshi/xiami.git
+cd xiami
+
+# 2. Copy skills to Claude Code (makes them available in all projects)
 cp -r skills/* ~/.claude/skills/
 
-# 2. Copy memory/feedback rules (optional but recommended)
+# 3. Copy CLAUDE.md (project context for Claude Code)
+# CLAUDE.md stays in the repo root — Claude Code reads it automatically
+
+# 4. (Optional) Copy memory/feedback rules
 mkdir -p ~/.claude/projects/$(pwd | sed 's|/|-|g')/memory
 cp memory/*.md ~/.claude/projects/$(pwd | sed 's|/|-|g')/memory/
 
-# 3. Start Claude Code and use the skills
+# 5. Start Claude Code
 claude
+```
 
-# Example: research food in Ho Chi Minh City
-> /scrape-xhs 胡志明美食攻略
+## Example: Build a Travel Guide from Scratch
 
-# Example: check flight prices
-> /scrape-ctrip-flights 深圳 胡志明 2026-04-30
+```bash
+# Step 1: Research food recommendations
+> /scrape-xhs 曼谷美食攻略
 
-# Example: build a presentation from your research
-> /build-slides 越南美食之旅
+# Step 2: Get flight prices
+> /scrape-ctrip-flights 上海 曼谷 2026-10-01
+
+# Step 3: Get hotel prices
+> /scrape-hotel-prices 曼谷万豪 曼谷 2026-10-01 2026-10-05
+
+# Step 4: Generate the presentation
+> /build-slides 曼谷美食之旅
+
+# Step 5: Add route maps
+> /plan-route 曼谷 Day1: Chatuchak Market, Wat Phra Kaew, Khao San Road
+
+# Step 6: Deploy (optional)
+> scp -r output/* your-server:/var/www/guide/
+```
+
+## How It Works
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  /scrape-xhs │────▶│  Structured  │────▶│ /build-slides│
+│  /scrape-    │     │  Data (JSON/ │     │             │
+│   ctrip-     │     │  Markdown)   │     │  HTML + CSS │
+│   flights    │     │              │     │  + Leaflet  │
+│  /scrape-    │     │  + Images    │     │  + Maps     │
+│   hotel-     │     │              │     │             │
+│   prices     │     └──────────────┘     └──────┬──────┘
+└─────────────┘                                  │
+                                                 ▼
+┌─────────────┐                          ┌──────────────┐
+│ /plan-route  │─────────────────────────▶│  Final HTML  │
+│              │  Leaflet.js maps         │  (Desktop +  │
+└─────────────┘                          │   Mobile)    │
+                                         └──────────────┘
 ```
 
 ## License
